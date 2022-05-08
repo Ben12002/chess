@@ -1,4 +1,11 @@
+require './AlgebraicNotationMove'
+require 'yaml'
+
 class Game
+
+  include Move
+
+  COMMANDS = ["resign", "draw"]
 
   def initialize
     @board = Board.new
@@ -7,6 +14,8 @@ class Game
     @white_resign = false
     @black_resign = false
     @draw = false
+    @move_list = []
+    @algebraic_notation_mode = false # an_mode is a flag which indicates whether the user should input a move in algebraic notation or not.
   end
 
   def play
@@ -38,9 +47,8 @@ class Game
   def introduction_message
     puts <<-HEREDOC
          ---------------------------------------------------------------------------------------------------------
-         Welcome to chess. On every turn, please use the chess algebraic notation (e.g: bxd5) to make a move. 
-         simply enter "draw" or "resign" to offer a draw or resign respectively. Similarly, you can save and 
-         load a game at any time.
+         Welcome to chess. simply enter "draw" or "resign" to offer a draw or resign respectively. 
+         Similarly, you can save and load a game at any time. Enter "help" to see instructions.
          ---------------------------------------------------------------------------------------------------------
          HEREDOC
   end
@@ -61,39 +69,40 @@ class Game
 
   # A ply is half a turn. In one turn, there are 2 plies: white's move and black's move.
   def ply(player)
-    player_move = get_move_input
+    player_move = get_move_input(player)
     if (player_move.include?("draw"))
       make_draw_offer(player)
     elsif (player_move.include?("resign"))
       resign(player)
     else
-      @board.move(player, player_move)
+      @board.move(player, player_move[0], player_move[1])
     end
   end
 
-  def get_move_input
+
+
+  def get_move_input(player)
     loop do
-      move = gets.chomp.downcase
-      return move if valid_input?(player, player_move)
+      from = gets.chomp.downcase
+      return from if COMMANDS.include?(from)
+      from_array = from.split(",")
+      break if (valid_move_format(from) && @board.valid_from?(player, from_array[0],from_array[1])
       puts "Please enter a valid move"
     end
+
+    loop do
+      to = gets.chomp
+      return to if COMMANDS.include?(from)
+      break if (valid_move_format(to) && @board.legal_move?(from, to)
+      puts "Please enter a valid move"
+    end
+
+    [from, to]
   end
 
-  
-  def valid_input?(player, player_move)
-    valid_format = valid_format?(player_move)
-    legal_move = @board.legal_move?(player, player_move)
-    valid_format && legal_move
+  def valid_move_format?(input)
+    input.length == 3 && input.match?(/[0-7],[0-7]/) 
   end
-
-  def valid_format(move)
-    length = move.length
-    return false if !length.between?(2,6)
-
-    return move.match?(/[a-h][1-8]/) if length == 2
-
-  end
-  
 
   def make_draw_offer(player)
     print "#{player} offered a draw. Accept? (y/n): "
