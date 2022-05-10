@@ -1,5 +1,6 @@
 class Board
 
+
   def initialize
     @arr = [[" ", " ", " ", " ", " ", " ", " ", " "],
             [" ", " ", " ", " ", " ", " ", " ", " "],
@@ -21,13 +22,22 @@ class Board
   end
 
   def move(player, from, to)
+
   end
 
-  def legal_move?(from, to)
-    
+  def legal_move?(from, to, turn)
+    x = from[0]
+    y = from[1]
+    piece_to_move = @arr[x][y]
+
+    get_legal_moves(piece_to_move, turn).include?(to)
   end
 
+  # use polymorphism with piece.get_threat_range, filter out to get only the legal moves.
   def get_legal_moves(piece)
+    all_moves = piece.get_threat_range
+
+    if in_check?
   end
 
   # return false if square referred to by from is either 

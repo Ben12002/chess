@@ -93,7 +93,7 @@ class Game
     loop do
       to = gets.chomp
       return to if COMMANDS.include?(from)
-      break if (valid_move_format(to) && @board.legal_move?(from, to)
+      break if (valid_move_format(to) && @board.legal_move?(from, to, @turn)
       puts "Please enter a valid move"
     end
 
