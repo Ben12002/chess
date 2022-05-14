@@ -13,5 +13,18 @@ class Piece
   def get_moveable_tiles
   end
 
+  def move(new_position, ply)
+  end
+
+  def get_legal_moves(board, ply)
+  end
+
+  def to_s
+  end
+
+  def move(to, ply)
+    @position = to
+  end
+
 end
 

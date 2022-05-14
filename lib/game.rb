@@ -9,8 +9,8 @@ class Game
 
   def initialize
     @board = Board.new
-    @turn = 0
-    @ply = 1
+    @turn = 1
+    @ply = 0
     @white_resign = false
     @black_resign = false
     @draw = false
@@ -75,7 +75,7 @@ class Game
     elsif (player_move.include?("resign"))
       resign(player)
     else
-      @board.move(player, player_move[0], player_move[1])
+      @board.move(player, player_move[0], player_move[1], @ply)
     end
   end
 
@@ -93,7 +93,7 @@ class Game
     loop do
       to = gets.chomp
       return to if COMMANDS.include?(from)
-      break if (valid_move_format(to) && @board.legal_move?(from, to, @turn)
+      break if (valid_move_format(to) && @board.legal_move?(from, to, @ply)
       puts "Please enter a valid move"
     end
 
