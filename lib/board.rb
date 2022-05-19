@@ -10,7 +10,7 @@ class Board
             [" ", " ", " ", " ", " ", " ", " ", " "],
             [" ", " ", " ", " ", " ", " ", " ", " "],
             [" ", " ", " ", " ", " ", " ", " ", " "]]
-    set_up_board
+    # set_up_board
   end
 
   def set_up_board
@@ -64,11 +64,15 @@ class Board
   def display
   end
 
-  def move(player, from, to, ply)
-    x = from[0]
-    y = from[1]
-    piece_to_move = @arr[x][y]
-    @arr[x][y] = " "
+  def move(from, to, ply)
+    from_x = from[0]
+    from_y = from[1]
+    to_x = to[0]
+    to_y = to[1]
+    piece_to_move = @arr[from_x][from_y]
+    @arr[from_x][from_y] = " "
+    @arr[to_x][to_y] = piece_to_move
+
     piece_to_move.move(to, ply)
   end
 
@@ -86,7 +90,7 @@ class Board
 
   def all_attacked_tiles(color)
     pieces = (color == "white") ? @white_pieces : @black_pieces
-    return pieces.reduce([]){|acc, curr| acc += curr.get_tiles_attacked}
+    pieces.reduce([]){|acc, curr| acc += curr.get_tiles_attacked}
   end
 
   def can_be_en_passant?(piece)
@@ -97,7 +101,7 @@ class Board
   # empty, or has an opponent piece on it.
   # return false if format is wrong.
   def valid_from?(player, x, y)
-    !square_empty?(x,y) && players_piece?(player, x, y)
+    !square_empty?(x,y) && players_piece?(player, x, y) && !@arr[x][y].get_legal_moves.empty?
   end
 
   def players_piece?(player, x, y)
@@ -109,7 +113,7 @@ class Board
   end
 
   def same_color?(color, col, row)
-    !board.square_empty?(col, row) && @arr[col][row].color == color
+    !square_empty?(col, row) && @arr[col][row].color == color
   end
 
 end

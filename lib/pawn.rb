@@ -20,12 +20,12 @@ class Pawn < Piece
     x = @position[0]
     y = @position[1]
 
-    if @color = "white"
+    if @color == "white"
       tiles_attacked.push([x + 1, y + 1])
       tiles_attacked.push([x - 1, y + 1])
     end
 
-    if @color = "black"
+    if @color == "black"
       tiles_attacked.push([x + 1, y - 1])
       tiles_attacked.push([x - 1, y - 1])
     end

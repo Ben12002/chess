@@ -1,6 +1,9 @@
 require_relative '../lib/piece'
+require_relative '../lib/diagonal_mover'
 
 class Bishop < Piece
+
+  include DiagonalMover
 
   attr_accessor :position
   attr_reader :color
@@ -42,11 +45,16 @@ class Bishop < Piece
     tiles_attacked
   end
 
-  def get_moveable_tiles
-    get_tiles_attacked
+  def get_legal_moves(board, ply)
+    get_tiles_attacked.filter do |tile|
+      !board.same_color?(@color, tile[0], tile[1]) &&
+      !diagonally_obstructed_tile?(board, tile)
+      # board_copy = board.clone
+      # board_copy.move(@position, tile, ply)
+      # return false if board_copy.player_in_check?(@color)
+    end
   end
 
-  
+
 end
 
-print Bishop.new([3,3],"white").get_tiles_attacked
