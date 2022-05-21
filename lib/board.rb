@@ -32,32 +32,28 @@ class Board
     end
 
     8.times do |x_position|
-      start_position = [x_position, pawn_y_position]
+      start_position = Position.new(x_position, pawn_y_position)
       pieces.push(Pawn.new(start_position, color))
     end
 
-    pieces.push(Rook.new([0,piece_y_position], color))
-    pieces.push(Rook.new([7,piece_y_position], color))
+    pieces.push(Rook.new(Position.new(0,piece_y_position), color))
+    pieces.push(Rook.new(Position.new(7,piece_y_position), color))
 
-    pieces.push(Knight.new([1, piece_y_position], color))
-    pieces.push(Knight.new([6, piece_y_position], color))
+    pieces.push(Knight.new(Position.new(1, piece_y_position), color))
+    pieces.push(Knight.new(Position.new(6, piece_y_position), color))
 
-    pieces.push(Bishop.new([2,piece_y_position], color))
-    pieces.push(Bishop.new([5,piece_y_position], color))
+    pieces.push(Bishop.new(Position.new(2,piece_y_position), color))
+    pieces.push(Bishop.new(Position.new(5,piece_y_position), color))
 
-    pieces.push(Queen.new([3,piece_y_position], color))
-    pieces.push(King.new([4,piece_y_position], color))
+    pieces.push(Queen.new(Position.new(3,piece_y_position), color))
+    pieces.push(King.new(Position.new(4,piece_y_position), color))
 
     pieces
   end
 
   def put_pieces_on_board(list_of_pieces)
     list_of_pieces.each do |piece|
-      x = piece.position[0]
-      y = piece.position[1]
-
-      arr[x][y] = piece
-
+      arr[piece.file][piece.rank] = piece
     end
   end
 
@@ -65,32 +61,37 @@ class Board
   end
 
   def move(from, to, ply)
-    from_x = from[0]
-    from_y = from[1]
-    to_x = to[0]
-    to_y = to[1]
-    piece_to_move = @arr[from_x][from_y]
-    @arr[from_x][from_y] = " "
-    @arr[to_x][to_y] = piece_to_move
-
+    piece_to_move = @arr[from.file][from.rank]
+    @arr[from.file][from.rank] = " "
+    capture_piece(to) unless square_empty?(to.file, to.rank)
+    @arr[to.file][to.rank] = piece_to_move
     piece_to_move.move(to, ply)
   end
 
+  def capture_piece(position)
+    captured_piece = @arr[position.file][position.rank]
+    if captured_piece.color == "white"
+      # will this delete more than 1 instance? e.g delete all rooks instead of only the intended one?
+      #https://ruby-doc.org/core-3.0.1/Array.html#method-i-delete
+      @white_pieces.delete(captured_piece)    
+    else
+      @black_pieces.delete(captured_piece)
+  end
+
   def legal_move?(from, to, ply)
-    x = from[0]
-    y = from[1]
-    piece_to_move = @arr[x][y]
+    piece_to_move = @arr[from.file][from.rank]
     piece_to_move.get_legal_moves(board, ply).include?(to)
   end
 
   def player_in_check?(color)
-    return @white_pieces.find{|piece| object.is_a?(king)}.in_check? if color == "white"
+    return @white_pieces.find{|piece| object.is_a?(king)}.in_threat_range? if color == "white"
     return @black_pieces.find{|piece| object.is_a?(king)}.in_check? if color == "black"
   end
 
+  # return all tiles attacked by pieces of a given color.
   def all_attacked_tiles(color)
     pieces = (color == "white") ? @white_pieces : @black_pieces
-    pieces.reduce([]){|acc, curr| acc += curr.get_tiles_attacked}
+    pieces.reduce([]){|acc, curr| acc += curr.get_full_move_range}
   end
 
   def can_be_en_passant?(piece)
@@ -108,12 +109,35 @@ class Board
     @arr[x][y].color == player.color
   end
 
-  def square_empty?(col, row)
-    @arr[col][row] == " "
+  def square_empty?(x, y)
+    @arr[x][y] == " "
   end
 
-  def same_color?(color, col, row)
-    !square_empty?(col, row) && @arr[col][row].color == color
+  def same_color?(color, x, y)
+    !square_empty?(x, y) && @arr[x][y].color == color
   end
+
+  # has to be able to differentiate between the original rook and any promoted rooks.
+  def can_castle?(position, color)
+    if color == "white"
+      left_rook_file = 0
+      right_rook_file = 7
+      rook_rank = 0
+      pieces = @white_pieces
+    else
+      left_rook_file = 7
+      right_rook_file = 0
+      rook_rank = 7
+      pieces = @black_pieces
+    end
+
+    if pieces.filter{|tile|}
+  end
+
+  def threatened_tile?(color, tile)
+    opposite_color = (color == "white") ? "black", "white"
+    all_attacked_tiles(opposite_color).include?(tile)
+  end
+
 
 end

@@ -1,21 +1,57 @@
 module StraightMover
 
+  def get_full_move_range
+    tiles_attacked = []
+    x = @position.file
+    y = @position.rank
+
+    #left
+    offset = 1
+    while x - offset >= 0
+      tiles_attacked.push(Position.new(x - offset, y))
+      offset += 1
+    end
+
+    #right
+    offset = 1
+    while x + offset <= 7 
+      tiles_attacked.push(Position.new(x + offset, y))
+      offset += 1
+    end
+
+    #down
+    offset = 1
+    while y - offset >= 0
+      tiles_attacked.push(Position.new(x, y - offset))
+      offset += 1
+    end
+
+    #up
+    offset = 1
+    while y + offset <= 7
+      tiles_attacked.push(Position.new(x, y + offset))
+      offset += 1
+    end
+
+    tiles_attacked
+  end
+
   def vertically_obstructed_tile?(board, tile)
-    this_x = @position[0]
-    this_y = @position[1]
-    tile_x = tile[0]
-    tile_y = tile[1]
-    pieces_attacked = get_pieces_in_range(board)
-    pieces_attacked_y = pieces_attacked.filter {|piece| piece[0] == this_x}
+    this_x = @position.file
+    this_y = @position.rank
+    tile_x = tile.file
+    tile_y = tile.rank
+    pieces_in_range = get_pieces_in_range(board)
+    pieces_in_range_y = pieces_in_range.filter {|piece| piece.file == this_x}
     flag = false
 
     return false if this_x != tile_x
-    return false if !get_tiles_attacked.include?(tile)
+    return false if !get_full_move_range.include?(tile)
 
     i = 0
-    while i < pieces_attacked_y.length
-      piece_x = pieces_attacked_y[i][0]
-      piece_y = pieces_attacked_y[i][1]
+    while i < pieces_in_range_y.length
+      piece_x = pieces_in_range_y[i].file
+      piece_y = pieces_in_range_y[i].rank
   
       if piece_y > this_y
         flag = (tile_y > piece_y)
@@ -29,21 +65,21 @@ module StraightMover
   end
 
   def horizontally_obstructed_tile?(board, tile)
-    this_x = @position[0]
-    this_y = @position[1]
-    tile_x = tile[0]
-    tile_y = tile[1]
-    pieces_attacked = get_pieces_in_range(board)
-    pieces_attacked_x = pieces_attacked.filter {|piece| piece[1] == this_y}
+    this_x = @position.file
+    this_y = @position.rank
+    tile_x = tile.file
+    tile_y = tile.rank
+    pieces_in_range = get_pieces_in_range(board)
+    pieces_in_range_x = pieces_in_range.filter {|piece| piece.file == this_y}
     flag = false
 
     return false if this_y != tile_y
-    return false if !get_tiles_attacked.include?(tile)
+    return false if !get_full_move_range.include?(tile)
 
     i = 0
-    while i < pieces_attacked_x.length
-      piece_x = pieces_attacked_x[i][0]
-      piece_y = pieces_attacked_x[i][1]
+    while i < pieces_in_range_x.length
+      piece_x = pieces_in_range_x[i].file
+      piece_y = pieces_in_range_x[i].rank
       
       if piece_x > this_x
         flag = (tile_x > piece_x)
@@ -55,5 +91,7 @@ module StraightMover
     end
     false
   end
+
+  
 
 end

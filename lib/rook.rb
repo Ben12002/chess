@@ -2,57 +2,17 @@ require_relative '../lib/piece'
 require_relative '../lib/straight_mover'
 
 class Rook < Piece
-  
-  include StraightMover
 
-  attr_accessor :position
-  attr_reader :color
+  include StraightMover
 
   def initialize(position, color)
     super(position, color)
     @moved_already = false
   end
-  
-
-  def get_tiles_attacked
-    tiles_attacked = []
-    x = @position[0]
-    y = @position[1]
-
-    #left
-    offset = 1
-    while x - offset >= 0
-      tiles_attacked.push([x - offset, y])
-      offset += 1
-    end
-
-    #right
-    offset = 1
-    while x + offset <= 7 
-      tiles_attacked.push([x + offset, y])
-      offset += 1
-    end
-
-    #down
-    offset = 1
-    while y - offset >= 0
-      tiles_attacked.push([x, y - offset])
-      offset += 1
-    end
-
-    #up
-    offset = 1
-    while y + offset <= 7
-      tiles_attacked.push([x, y + offset])
-      offset += 1
-    end
-
-    tiles_attacked
-  end
 
   def get_legal_moves(board, ply)
     get_tiles_attacked.filter do |tile|
-      !board.same_color?(@color, tile[0], tile[1]) &&
+      !board.same_color?(@color, tile.file, tile.rank) &&
       !vertically_obstructed_tile?(board, tile) &&
       !horizontally_obstructed_tile?(board, tile)
       # !in_check_if_move?(board, tile, ply)        # test this when king implementation is done
@@ -62,6 +22,15 @@ class Rook < Piece
       # board_copy = board.clone
       # board_copy.move(@position, tile, ply) # will this modify this rook's @position?
       # return !board_copy.player_in_check?(@color)
+    end
+  end
+
+  # Identical to get_legal_moves, except not caring about checks/pins.
+  def get_attacked_tiles
+    get_tiles_attacked.filter do |tile|
+      !board.same_color?(@color, tile.file, tile.rank) &&
+      !vertically_obstructed_tile?(board, tile) &&
+      !horizontally_obstructed_tile?(board, tile)
     end
   end
 
