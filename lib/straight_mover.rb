@@ -36,6 +36,11 @@ module StraightMover
     tiles_attacked
   end
 
+  # Still includes pieces that blocked by others. returns all pieces in get_full_move_range.
+  def get_pieces_in_range(board)
+    get_full_move_range.filter {|tile| !board.square_empty?(tile.file, tile.rank)} 
+  end
+
   def vertically_obstructed_tile?(board, tile)
     this_x = @position.file
     this_y = @position.rank

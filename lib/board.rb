@@ -1,4 +1,18 @@
+require_relative "colorizer"
+require_relative "position"
+require_relative "pawn"
+require_relative "king"
+require_relative "queen"
+require_relative "rook"
+require_relative "bishop"
+require_relative "knight"
+require_relative "piece"
+
 class Board
+
+  attr_reader :white_pieces
+
+  include Colorizer
 
 
   def initialize
@@ -10,7 +24,35 @@ class Board
             [" ", " ", " ", " ", " ", " ", " ", " "],
             [" ", " ", " ", " ", " ", " ", " ", " "],
             [" ", " ", " ", " ", " ", " ", " ", " "]]
-    # set_up_board
+    set_up_board
+  end
+
+  def get_square(file, rank)
+    @arr[file][rank]
+  end
+
+  def dark_tile?(file, rank)
+    (file - rank).abs % 2 == 0
+  end
+
+  # Displays board in different perspectives depending on current player.
+  def display_board(current_player)
+  end
+
+  def to_s
+    i = 0
+    j = 7
+    outstr = ""
+    while j >= 0
+      while i < 8
+        outstr += colorize(@arr[i][j], i, j)
+        i += 1
+      end
+      i = 0
+      outstr += "\n"
+      j -= 1
+    end
+    outstr
   end
 
   def set_up_board
@@ -53,7 +95,7 @@ class Board
 
   def put_pieces_on_board(list_of_pieces)
     list_of_pieces.each do |piece|
-      arr[piece.file][piece.rank] = piece
+      @arr[piece.file][piece.rank] = piece
     end
   end
 
@@ -62,10 +104,79 @@ class Board
 
   def move(from, to, ply)
     piece_to_move = @arr[from.file][from.rank]
-    @arr[from.file][from.rank] = " "
-    capture_piece(to) unless square_empty?(to.file, to.rank)
-    @arr[to.file][to.rank] = piece_to_move
+    
+    if castle?(from, to)
+      castle(piece_to_move, from, to) 
+    elsif en_passant?(piece_to_move, from, to)
+      en_passant()
+    elsif pawn_double_move?(piece_to_move, from, to)
+      pawn_double_move()
+    elsif promotion?(piece_to_move, from, to)
+      promotion()
+    else
+      @arr[from.file][from.rank] = " "
+      capture_piece(to) unless square_empty?(to.file, to.rank)
+      @arr[to.file][to.rank] = piece_to_move
+      piece_to_move.move(to, ply)
+    end
+    # Update pawns' en_passantable status
+    update_all_pawns_status(ply)
+  end
+
+  def en_passant?(piece_to_move, from, to)
+    return false if !piece_to_move.is_a?(Pawn)
+
+    if @color == "white"
+      tile_beside = Position.new(tile.file, tile.rank - 1)
+    else
+      tile_beside = Position.new(tile.file, tile.rank + 1)
+    end
+
+    piece_to_move.get_tiles_attacked(self).include?(to) && square_empty?(tile_beside.file, tile_beside.rank)  
+  end
+
+  def castle(from, to)
+    piece_to_move = @arr[from.file][from.rank]
+    # short castle
+    if to == Position.new(6,from.rank)
+      rook = get_short_rook(piece_to_move.color)
+      @arr[7][from.rank] = " "
+      @arr[5][from.rank] = rook
+    # long castle
+    elsif to == Position.new(2,from.rank)
+      rook = get_long_rook(piece_to_move.color)
+      @arr[0][from.rank] = " "
+      @arr[3][from.rank] = rook
+    end
+    rook.move()
     piece_to_move.move(to, ply)
+    @arr[to.file][to.rank] = piece_to_move
+  end
+
+  def castle?(piece_to_move, from, to)
+    return false if !piece_to_move.is_a(King)
+    (from.file == 4) && ((from.file - to.file).abs == 2)
+  end
+
+  def get_short_rook(color)
+    rank = color == "white" ? 0 : 7
+    @arr[7][rank]
+  end
+
+  def get_long_rook(color)
+    rank = color == "white" ? 0 : 7
+    @arr[0][rank]
+  end
+
+  def rook_moved_already?(color, file, rank)
+    pieces = color == "white" ? @white_pieces : @black_pieces
+
+    pieces.find do |piece| 
+      piece.is_a(Rook) &&
+      !piece.moved_already &&
+      piece.file == file && 
+      piece.rank == rank
+    end
   end
 
   def capture_piece(position)
@@ -76,6 +187,7 @@ class Board
       @white_pieces.delete(captured_piece)    
     else
       @black_pieces.delete(captured_piece)
+    end
   end
 
   def legal_move?(from, to, ply)
@@ -83,19 +195,16 @@ class Board
     piece_to_move.get_legal_moves(board, ply).include?(to)
   end
 
+  # Checks whether the player's king of a given color is in check
   def player_in_check?(color)
-    return @white_pieces.find{|piece| object.is_a?(king)}.in_threat_range? if color == "white"
-    return @black_pieces.find{|piece| object.is_a?(king)}.in_check? if color == "black"
+    return @white_pieces.find{|piece| piece.is_a?(King)}.in_check? if color == "white"
+    return @black_pieces.find{|piece| piece.is_a?(King)}.in_check? if color == "black"
   end
 
   # return all tiles attacked by pieces of a given color.
   def all_attacked_tiles(color)
     pieces = (color == "white") ? @white_pieces : @black_pieces
-    pieces.reduce([]){|acc, curr| acc += curr.get_full_move_range}
-  end
-
-  def can_be_en_passant?(piece)
-
+    pieces.reduce([]){|acc, curr| acc += curr.get_attacked_tiles}
   end
 
   # return false if square referred to by from is either 
@@ -117,27 +226,38 @@ class Board
     !square_empty?(x, y) && @arr[x][y].color == color
   end
 
-  # has to be able to differentiate between the original rook and any promoted rooks.
-  def can_castle?(position, color)
-    if color == "white"
-      left_rook_file = 0
-      right_rook_file = 7
-      rook_rank = 0
-      pieces = @white_pieces
-    else
-      left_rook_file = 7
-      right_rook_file = 0
-      rook_rank = 7
-      pieces = @black_pieces
-    end
-
-    if pieces.filter{|tile|}
-  end
-
+  # whether a tile is threatened from the perspective of color.
   def threatened_tile?(color, tile)
-    opposite_color = (color == "white") ? "black", "white"
+    opposite_color = (color == "white") ? "black" : "white"
     all_attacked_tiles(opposite_color).include?(tile)
   end
 
+  def get_all_legal_moves(color)
+    pieces = (color == "white") ? @white_pieces : @black_pieces
+    pieces.reduce([]){|acc, curr| acc += curr.get_legal_moves}
+  end
+
+  def no_legal_moves?(color)
+    get_all_legal_moves(color).length == 0
+  end
+
+  def stalemate?(color)
+    !player_in_check?(color) && no_legal_moves?(color)
+  end
+
+  def checkmate?(color)
+    player_in_check?(color) && no_legal_moves?(color)
+  end
+
+  def insufficient_material?
+    false #stub
+  end
+
+  def threefold_repetition?(ply)
+    false #stub
+  end
 
 end
+
+# my_board = Board.new
+# puts my_board.white_pieces.find{|piece| piece.is_a?(King)}.rank

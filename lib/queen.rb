@@ -1,8 +1,14 @@
 require_relative '../lib/piece'
+require_relative 'straight_mover'
+require_relative 'diagonal_mover'
 
 class Queen < Piece
 
   include StraightMover, DiagonalMover
+
+  def unicode
+    "\u265B"
+  end
   
   # Disregards other pieces on the board.
   def get_full_move_range
@@ -12,14 +18,13 @@ class Queen < Piece
   # Affected by pins/checks and obstructions.
   def get_legal_moves(board, ply)
     get_full_move_range.filter do |tile|
-      return false if board.same_color?(@color, tile.file, tile.rank)
-      return false if  vertically_obstructed_tile?(board, tile) || 
-                       horizontally_obstructed_tile?(board, tile) || 
-                       diagonally_obstructed_tile?(board, tile)
-      board_copy = board.clone
-      board_copy.move(@position, tile, ply)
-      return false if board_copy.player_in_check?(@color)
-      return true
+      !board.same_color?(@color, tile.file, tile.rank) &&
+      !vertically_obstructed_tile?(board, tile) &&
+      !horizontally_obstructed_tile?(board, tile) &&
+      !diagonally_obstructed_tile?(board, tile)
+      # && !in_check_if_move?(board, tile, ply)        # test this when king implementation is done
+
+      
     end
   end
 

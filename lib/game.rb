@@ -3,8 +3,6 @@ require 'yaml'
 
 class Game
 
-  include Move
-
   COMMANDS = ["resign", "draw"]
 
   def initialize
@@ -60,7 +58,7 @@ class Game
       current_move = ply(current_player)
       @board.display
 
-      return if game_over?
+      return if game_over?(current_player)
 
       @ply += 1
       @turn += 1 if current_player = @black
@@ -122,10 +120,12 @@ class Game
     end
   end
 
-  def game_over?
-    checkmate = @board.checkmate?
-    stalemate = @board.stalemate?
-    @white_resign || @black_resign || @draw || checkmate || stalemate
+  def game_over?(current_player)
+    checkmate = @board.checkmate?(current_player.color)
+    stalemate = @board.stalemate?(current_player.color)
+    insufficient_material = @board.insufficient_material?
+    threefold_repetition = @board.threefold_repetition?
+    @white_resign || @black_resign || @draw || checkmate || stalemate || threefold_repetition
   end
 
   def game_results
@@ -136,6 +136,8 @@ class Game
     return puts "Black wins!" if @board.winner = "black"
     return puts "Stalemate..." if @board.stalemate?
   end
+
+  
   
 
   

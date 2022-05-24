@@ -36,6 +36,11 @@ module DiagonalMover
     full_move_range
   end
 
+  # Still includes pieces that blocked by others. returns all pieces in get_full_move_range.
+  def get_pieces_in_range(board)
+    get_full_move_range.filter {|tile| !board.square_empty?(tile.file, tile.rank)} 
+  end
+
   def diagonally_obstructed_tile?(board, tile)
     up_right_diagonally_obstructed_tile?(board, tile) || 
     up_left_diagonally_obstructed_tile?(board, tile) ||

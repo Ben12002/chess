@@ -1,6 +1,7 @@
 class Knight < Piece
 
-  def get_legal_moves
+  def unicode
+    "\u265E"
   end
 
   def get_full_move_range
@@ -18,16 +19,9 @@ class Knight < Piece
     full_move_range.push(Position.new(x + 2, y - 1)) if (x + 2) < 8 && (y - 1) >= 0
   end
 
-  def get_moveable_tiles
-    get_full_move_range
-  end
-
   def get_legal_moves(board)
     get_full_move_range.filter do |tile|
-      board_copy = board.clone
-      board_copy.move(@position, tile, ply)
-      return false if board_copy.player_in_check?(@color)
-      !board.same_color?(tile)
+      # !in_check_if_move?(board, tile, ply)        # test this when king implementation is done
     end
   end
 
