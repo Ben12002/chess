@@ -39,9 +39,9 @@ class Piece
     unicode
   end
 
-  # Get the tiles under attack by the current piece. Accounts for obstruction, but ignores pins.
-  def get_attacked_tiles(board)
-  end
+  # # Get the tiles under attack by the current piece. Accounts for obstruction, but ignores pins.
+  # def get_attacked_tiles(board)
+  # end
 
   
   # # if it's OKAY to have get_pieces_in_range:

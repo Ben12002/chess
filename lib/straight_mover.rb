@@ -1,5 +1,41 @@
 module StraightMover
 
+  def get_full_move_range_straight
+    tiles_attacked = []
+    x = @position.file
+    y = @position.rank
+
+    #left
+    offset = 1
+    while x - offset >= 0
+      tiles_attacked.push(Position.new(x - offset, y))
+      offset += 1
+    end
+
+    #right
+    offset = 1
+    while x + offset <= 7 
+      tiles_attacked.push(Position.new(x + offset, y))
+      offset += 1
+    end
+
+    #down
+    offset = 1
+    while y - offset >= 0
+      tiles_attacked.push(Position.new(x, y - offset))
+      offset += 1
+    end
+
+    #up
+    offset = 1
+    while y + offset <= 7
+      tiles_attacked.push(Position.new(x, y + offset))
+      offset += 1
+    end
+
+    tiles_attacked
+  end
+
   def get_full_move_range
     tiles_attacked = []
     x = @position.file

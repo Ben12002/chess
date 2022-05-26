@@ -8,11 +8,13 @@ class Position
   end
 
   def ==(other)
-    (self.class == other.class) && (@file == other.file) && (@rank == other.file)
+    (self.class == other.class) && (@file == other.file) && (@rank == other.rank)
   end
 
   
 end
+
+
 
 
 

@@ -18,7 +18,7 @@ class King < Piece
 
   def get_full_move_range
     x = @position.file
-    y = @position.range
+    y = @position.rank
     full_move_range = []
 
     full_move_range.push(Position.new(x + 1, y + 1)) if (x + 1) < 8 && (y + 1) < 8
@@ -31,6 +31,7 @@ class King < Piece
     full_move_range.push(Position.new(x + 1, y - 1)) if (x + 1) >= 0 && (y - 1) >= 0
     full_move_range.push(Position.new(x, y - 1)) if (y - 1) >= 0 
     full_move_range.push(Position.new(x - 1, y - 1)) if (x - 1) >= 0 && (y - 1) >= 0
+    full_move_range
   end
 
   def get_attacked_tiles(board)
@@ -46,11 +47,13 @@ class King < Piece
       castle_short = Position.new(6,7)
       castle_long = Position.new(2,7)
     end
-      legal_moves.push(castle_short) if can_castle?("short", @color)
-      legal_moves.push(castle_short) if can_castle?("long", @color)
+    legal_moves.push(castle_short) if can_castle?("short", board, @color)
+    legal_moves.push(castle_short) if can_castle?("long", board, @color)
+    
+    legal_moves
   end
 
-  def can_castle?(castle_direction, board)
+  def can_castle?(castle_direction, board, color)
     if color == "white"
       long_rook_file = 0
       short_rook_file = 7
@@ -62,9 +65,9 @@ class King < Piece
     end
 
     if castle_direction == "short"
-      return false if board.rook_moved_already?(@color, short_rook_file)
+      return false if board.rook_moved_already?(@color, short_rook_file, rook_rank)
     else
-      return false if board.rook_moved_already?(@color, long_rook_file)
+      return false if board.rook_moved_already?(@color, long_rook_file, rook_rank)
     end
 
     return false if @moved_already

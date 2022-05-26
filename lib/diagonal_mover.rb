@@ -1,5 +1,41 @@
 module DiagonalMover
 
+  def get_full_move_range_diagonal
+    full_move_range = []
+    x = @position.file
+    y = @position.rank
+
+    #down-left
+    offset = 1
+    while (x - offset >= 0) && (y - offset >= 0)
+      full_move_range.push(Position.new(x - offset, y - offset))
+      offset += 1
+    end
+
+    #up-left
+    offset = 1
+    while (x - offset >= 0) && (y + offset <= 7)
+      full_move_range.push(Position.new(x - offset, y + offset))
+      offset += 1
+    end
+
+    #down-right
+    offset = 1
+    while (x + offset <= 7) && (y - offset >= 0)
+      full_move_range.push(Position.new(x + offset, y - offset))
+      offset += 1
+    end
+
+    #up-right
+    offset = 1
+    while (x + offset <= 7) && (y + offset <= 7)
+      full_move_range.push(Position.new(x + offset, y + offset))
+      offset += 1
+    end
+
+    full_move_range
+  end
+
   def get_full_move_range
     full_move_range = []
     x = @position.file

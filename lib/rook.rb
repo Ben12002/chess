@@ -18,7 +18,7 @@ class Rook < Piece
   end
 
   def get_legal_moves(board, ply)
-    get_tiles_attacked.filter do |tile|
+    get_full_move_range.filter do |tile|
       !board.same_color?(@color, tile.file, tile.rank) &&
       !vertically_obstructed_tile?(board, tile) &&
       !horizontally_obstructed_tile?(board, tile)
@@ -33,8 +33,8 @@ class Rook < Piece
   end
 
   # Identical to get_legal_moves, except not caring about checks/pins.
-  def get_attacked_tiles
-    get_tiles_attacked.filter do |tile|
+  def get_attacked_tiles(board)
+    get_full_move_range.filter do |tile|
       !board.same_color?(@color, tile.file, tile.rank) &&
       !vertically_obstructed_tile?(board, tile) &&
       !horizontally_obstructed_tile?(board, tile)

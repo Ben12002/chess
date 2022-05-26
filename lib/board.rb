@@ -31,12 +31,35 @@ class Board
     @arr[file][rank]
   end
 
+  def update_square(element, file, rank)
+    @arr[file][rank] = element
+  end
+
   def dark_tile?(file, rank)
-    (file - rank).abs % 2 == 0
+    (file - rank).abs.even?
   end
 
   # Displays board in different perspectives depending on current player.
-  def display_board(current_player)
+  def display(current_player)
+  end
+
+  # Displays board in different perspectives depending on current player.
+  def simple_display_with_index
+    i = 0
+    j = 7
+    outstr = "\n"
+
+    while j >= 0
+      while i < 8
+        outstr += colorize(@arr[i][j], i, j)
+        i += 1
+      end
+      i = 0
+      outstr += " #{j} \n"
+      j -= 1
+    end
+    outstr += " 0  1  2  3  4  5  6  7"
+    puts outstr
   end
 
   def to_s
@@ -98,17 +121,14 @@ class Board
       @arr[piece.file][piece.rank] = piece
     end
   end
-
-  def display
-  end
-
+  
   def move(from, to, ply)
     piece_to_move = @arr[from.file][from.rank]
     
-    if castle?(from, to)
-      castle(piece_to_move, from, to) 
+    if castle?(piece_to_move, from, to)
+      castle(from, to) 
     elsif en_passant?(piece_to_move, from, to)
-      en_passant()
+      en_passant(from, to, ply)
     elsif pawn_double_move?(piece_to_move, from, to)
       pawn_double_move()
     elsif promotion?(piece_to_move, from, to)
@@ -123,16 +143,43 @@ class Board
     update_all_pawns_status(ply)
   end
 
+  def update_all_pawns_status(ply)
+  end
+
+  def pawn_double_move?(piece_to_move, from, to)
+    false
+  end
+
+  def promotion?(piece_to_move, from, to)
+    false
+  end
+
+  def en_passant(from, to, ply)
+    piece_to_move = get_square(from.file, from.rank)
+    if piece_to_move.color == "white"
+      tile_beside = Position.new(to.file, to.rank - 1)
+    else
+      tile_beside = Position.new(to.file, to.rank + 1)
+    end
+
+    opponent_pawn = get_square(tile_beside.file, tile_beside.rank)
+    capture_piece(opponent_pawn)
+    
+    piece_to_move.move(to, ply)
+    update_square(piece_to_move, to.file, to.rank)
+  end
+
   def en_passant?(piece_to_move, from, to)
     return false if !piece_to_move.is_a?(Pawn)
 
-    if @color == "white"
-      tile_beside = Position.new(tile.file, tile.rank - 1)
+    if piece_to_move.color == "white"
+      tile_beside = Position.new(to.file, to.rank - 1)
+      opposite_color = "black"
     else
-      tile_beside = Position.new(tile.file, tile.rank + 1)
+      tile_beside = Position.new(to.file, to.rank + 1)
+      opposite_color = "white"
     end
-
-    piece_to_move.get_tiles_attacked(self).include?(to) && square_empty?(tile_beside.file, tile_beside.rank)  
+    square_empty?(to.file, to.rank) && piece_to_move.get_attacked_tiles(self).include?(to) && same_color?(opposite_color, tile_beside.file, tile_beside.rank)
   end
 
   def castle(from, to)
@@ -154,7 +201,7 @@ class Board
   end
 
   def castle?(piece_to_move, from, to)
-    return false if !piece_to_move.is_a(King)
+    return false if !piece_to_move.is_a?(King)
     (from.file == 4) && ((from.file - to.file).abs == 2)
   end
 
@@ -172,7 +219,7 @@ class Board
     pieces = color == "white" ? @white_pieces : @black_pieces
 
     pieces.find do |piece| 
-      piece.is_a(Rook) &&
+      piece.is_a?(Rook) &&
       !piece.moved_already &&
       piece.file == file && 
       piece.rank == rank
@@ -181,6 +228,7 @@ class Board
 
   def capture_piece(position)
     captured_piece = @arr[position.file][position.rank]
+    @arr[position.file][position.rank] = " "
     if captured_piece.color == "white"
       # will this delete more than 1 instance? e.g delete all rooks instead of only the intended one?
       #https://ruby-doc.org/core-3.0.1/Array.html#method-i-delete
@@ -192,30 +240,34 @@ class Board
 
   def legal_move?(from, to, ply)
     piece_to_move = @arr[from.file][from.rank]
-    piece_to_move.get_legal_moves(board, ply).include?(to)
+    piece_to_move.get_legal_moves(self, ply).include?(to)
   end
 
   # Checks whether the player's king of a given color is in check
   def player_in_check?(color)
-    return @white_pieces.find{|piece| piece.is_a?(King)}.in_check? if color == "white"
-    return @black_pieces.find{|piece| piece.is_a?(King)}.in_check? if color == "black"
+    return @white_pieces.find{|piece| piece.is_a?(King)}.in_check?(self) if color == "white"
+    return @black_pieces.find{|piece| piece.is_a?(King)}.in_check?(self) if color == "black"
   end
 
   # return all tiles attacked by pieces of a given color.
   def all_attacked_tiles(color)
     pieces = (color == "white") ? @white_pieces : @black_pieces
-    pieces.reduce([]){|acc, curr| acc += curr.get_attacked_tiles}
+    # pieces.reduce([]){|acc, curr| acc + curr.get_attacked_tiles(self)}
+    pieces.reduce([]) do |acc, curr| 
+      # p curr
+      acc + curr.get_attacked_tiles(self)
+    end
   end
 
   # return false if square referred to by from is either 
   # empty, or has an opponent piece on it.
   # return false if format is wrong.
-  def valid_from?(player, x, y)
-    !square_empty?(x,y) && players_piece?(player, x, y) && !@arr[x][y].get_legal_moves.empty?
+  def valid_from?(player, x, y, ply)
+    players_piece?(player, x, y) && !@arr[x][y].get_legal_moves(self, ply).empty? 
   end
 
   def players_piece?(player, x, y)
-    @arr[x][y].color == player.color
+    !square_empty?(x,y) && @arr[x][y].color == player.color
   end
 
   def square_empty?(x, y)
@@ -232,21 +284,21 @@ class Board
     all_attacked_tiles(opposite_color).include?(tile)
   end
 
-  def get_all_legal_moves(color)
+  def get_all_legal_moves(color, ply)
     pieces = (color == "white") ? @white_pieces : @black_pieces
-    pieces.reduce([]){|acc, curr| acc += curr.get_legal_moves}
+    pieces.reduce([]){|acc, curr| acc + curr.get_legal_moves(self, ply)}
   end
 
-  def no_legal_moves?(color)
-    get_all_legal_moves(color).length == 0
+  def no_legal_moves?(color, ply)
+    get_all_legal_moves(color, ply).length == 0
   end
 
-  def stalemate?(color)
-    !player_in_check?(color) && no_legal_moves?(color)
+  def stalemate?(color, ply)
+    !player_in_check?(color) && no_legal_moves?(color, ply)
   end
 
-  def checkmate?(color)
-    player_in_check?(color) && no_legal_moves?(color)
+  def checkmate?(color, ply)
+    player_in_check?(color) && no_legal_moves?(color, ply)
   end
 
   def insufficient_material?
@@ -255,6 +307,16 @@ class Board
 
   def threefold_repetition?(ply)
     false #stub
+  end
+
+  def can_en_passant?(color, ply, tile)
+    if color == "white"
+      tile_beside = Position.new(tile.file, tile.rank - 1)
+    else
+      tile_beside = Position.new(tile.file, tile.rank + 1)
+    end
+    return false if square_empty?(tile_beside.file, tile_beside.rank)
+    get_square(tile_beside.file, tile_beside.rank).can_be_en_passant?(ply)
   end
 
 end

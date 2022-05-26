@@ -1,4 +1,4 @@
-require './AlgebraicNotationMove'
+
 require 'yaml'
 
 class Game
@@ -36,6 +36,7 @@ class Game
 
   def get_name_input
     loop do
+      print "Please enter your name: "
       name = gets.chomp
       return name if name.length < 20
       print "Please enter less than 20 characters: "
@@ -53,10 +54,11 @@ class Game
 
   def turns
     loop do
-      current_player = @ply.odd? ? @white : @black
+      current_player = @ply.odd? ? @black : @white
+      @board.simple_display_with_index
 
       current_move = ply(current_player)
-      @board.display
+      
 
       return if game_over?(current_player)
 
@@ -73,27 +75,39 @@ class Game
     elsif (player_move.include?("resign"))
       resign(player)
     else
-      @board.move(player, player_move[0], player_move[1], @ply)
+      @board.move(player_move[0], player_move[1], @ply)
     end
   end
 
 
 
   def get_move_input(player)
-    loop do
-      from = gets.chomp.downcase
-      return from if COMMANDS.include?(from)
-      from_array = from.split(",")
-      break if (valid_move_format(from) && @board.valid_from?(player, from_array[0],from_array[1])
+    while true
+      print "Please enter the coordinates of a piece you'd like to move: "
+      from_input = gets.chomp.downcase
+      return from_input if COMMANDS.include?(from_input)
+      
+      if valid_move_format?(from_input)
+        from_array = from_input.split(",")
+        from = Position.new(from_array[0].to_i, from_array[1].to_i)
+        break if @board.valid_from?(player, from.file, from.rank, @ply)
+      end
       puts "Please enter a valid move"
     end
 
-    loop do
-      to = gets.chomp
-      return to if COMMANDS.include?(from)
-      break if (valid_move_format(to) && @board.legal_move?(from, to, @ply)
+    while true
+      print "Please enter the coordinates where you'd like to move the piece: "
+      to_input = gets.chomp
+      return to_input if COMMANDS.include?(to_input)
+      if (valid_move_format?(to_input)
+        to_array = to_input.split(",")
+        to = Position.new(to_array[0].to_i, to_array[1].to_i)
+        break if @board.legal_move?(from, to, @ply))
+      end
       puts "Please enter a valid move"
     end
+
+    
 
     [from, to]
   end
@@ -106,8 +120,8 @@ class Game
     print "#{player} offered a draw. Accept? (y/n): "
     loop do
       answer = gets.chomp.downcase
-      return @draw = true if answer = "y"
-      return @draw = false if answer = "n"
+      return @draw = true if answer == "y"
+      return @draw = false if answer == "n"
       print "Please enter either 'y' or 'n': "
     end
   end
@@ -121,10 +135,10 @@ class Game
   end
 
   def game_over?(current_player)
-    checkmate = @board.checkmate?(current_player.color)
-    stalemate = @board.stalemate?(current_player.color)
+    checkmate = @board.checkmate?(current_player.color, @ply)
+    stalemate = @board.stalemate?(current_player.color, @ply)
     insufficient_material = @board.insufficient_material?
-    threefold_repetition = @board.threefold_repetition?
+    threefold_repetition = @board.threefold_repetition?(@ply)
     @white_resign || @black_resign || @draw || checkmate || stalemate || threefold_repetition
   end
 

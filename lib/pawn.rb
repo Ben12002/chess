@@ -14,46 +14,47 @@ class Pawn < Piece
     @position = position
     @color = color
     moved_already = false
-    @double_move_ply = -1
+    @double_move_ply = -99
   end
 
   
   # en passant only possible for 1 turn after a pawn moves 2 square
 
   # have to take into account en passant
-  def get_tiles_attacked(board)
+  def get_attacked_tiles(board)
     tiles_attacked = []
     x = @position.file
-    y = @position
+    y = @position.rank
 
     if @color == "white"
-      tiles_attacked.push([x + 1, y + 1]) if (x + 1 < 8) && (y + 1 < 8)
-      tiles_attacked.push([x - 1, y + 1]) if (x - 1 >= 0) && (y + 1 < 8)
+      tiles_attacked.push(Position.new(x + 1, y + 1)) if (x + 1 < 8) && (y + 1 < 8)
+      tiles_attacked.push(Position.new(x - 1, y + 1)) if (x - 1 >= 0) && (y + 1 < 8)
     end
 
     if @color == "black"
-      tiles_attacked.push([x + 1, y - 1]) if (x + 1 < 8) && (y - 1 >= 0)
-      tiles_attacked.push([x - 1, y - 1]) if (x - 1 >= 0) && (y - 1 >= 8)
+      tiles_attacked.push(Position.new(x + 1, y - 1)) if (x + 1 < 8) && (y - 1 >= 0)
+      tiles_attacked.push(Position.new(x - 1, y - 1)) if (x - 1 >= 0) && (y - 1 >= 8)
     end
 
     tiles_attacked
   end
 
   def get_vertical_moves
+    vertical_moves = []
     x = @position.file
     y = @position.rank
 
     if @color == "white"
-      moveable_tiles.push([x, y + 1]) if (y + 1 < 8)
-      moveable_tiles.push([x, y + 2]) if (y + 2 < 8)
+      vertical_moves.push(Position.new(x, y + 1)) if (y + 1 < 8)
+      vertical_moves.push(Position.new(x, y + 2)) if (y + 2 < 8)
     else
-      moveable_tiles.push([x, y - 1]) if (y - 1 >= 0)
-      moveable_tiles.push([x, y - 2]) if (y - 2 >= 0)
+      vertical_moves.push(Position.new(x, y - 1)) if (y - 1 >= 0)
+      vertical_moves.push(Position.new(x, y - 2)) if (y - 2 >= 0)
     end
   end
 
   def get_full_move_range(board)
-   get_vertical_moves + get_tiles_attacked
+   get_vertical_moves + get_attacked_tiles(board, ply)
   end
 
   def get_legal_moves(board, ply)
@@ -62,11 +63,11 @@ class Pawn < Piece
       !(@moved_already && double_move?(tile))
     end
 
-    valid_capture_moves = get_tiles_attacked(board).filter do |tile| 
-      !board.same_color?(tile.file, tile.rank) && 
-      (!board.square_empty?(tile.file, tile.rank) || can_en_passant?(board, ply, tile))
+    valid_capture_moves = get_attacked_tiles(board).filter do |tile| 
+      !board.same_color?(@color, tile.file, tile.rank) && 
+      (!board.square_empty?(tile.file, tile.rank) || board.can_en_passant?(@color, ply, tile))
+    
     end
-
     valid_non_capture_moves + valid_capture_moves
   end
 
@@ -74,14 +75,14 @@ class Pawn < Piece
     (tile.rank - @position.rank).abs == 2
   end
 
-  def can_en_passant?(board, ply, tile)
-    if @color == "white"
-      tile_beside = Position.new(tile.file, tile.rank - 1)
-    else
-      tile_beside = Position.new(tile.file, tile.rank + 1)
-    end
-    board.get_square(tile_beside.file, tile_beside.rank).can_be_en_passant?(ply)
-  end
+  # def can_en_passant?(board, ply, tile)
+  #   if @color == "white"
+  #     tile_beside = Position.new(tile.file, tile.rank - 1)
+  #   else
+  #     tile_beside = Position.new(tile.file, tile.rank + 1)
+  #   end
+  #   board.get_square(tile_beside.file, tile_beside.rank).can_be_en_passant?(ply)
+  # end
 
   def can_be_en_passant?(ply)
     ply - @double_move_ply == 1
