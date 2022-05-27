@@ -34,7 +34,7 @@ class Queen < Piece
   # Disregards pins/checks, but affected by obstructions.
   def get_attacked_tiles(board)
     get_full_move_range.filter do |tile|
-      !board.same_color?(@color, tile.file, tile.rank) &&
+      # !board.same_color?(@color, tile.file, tile.rank) &&
       !vertically_obstructed_tile?(board, tile) &&
       !horizontally_obstructed_tile?(board, tile) &&
       !diagonally_obstructed_tile?(board, tile)

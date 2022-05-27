@@ -147,7 +147,7 @@ describe Rook do
     it "returns a list of coordinates" do
       result = rook.get_attacked_tiles(board)
       expect(result).to contain_exactly(Position.new(2,3), Position.new(3,2), Position.new(4,3), Position.new(5,3), 
-                                        Position.new(3,4), Position.new(3,5), Position.new(3,6))
+                                        Position.new(3,4), Position.new(3,5), Position.new(3,6), Position.new(3,1), Position.new(1,3))
     end
   end
 
