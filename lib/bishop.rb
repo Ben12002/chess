@@ -21,9 +21,17 @@ class Bishop < Piece
 
   def get_legal_moves(board, ply)
     get_full_move_range.filter do |tile|
+
+      # puts '---------------------------------'
+      # p tile
+      # p !board.same_color?(@color, tile.file, tile.rank)
+      # p !diagonally_obstructed_tile?(board, tile)
+      # p !in_check_if_move?(board, tile, ply)
+      # puts '---------------------------------'
+
       !board.same_color?(@color, tile.file, tile.rank) &&
-      !diagonally_obstructed_tile?(board, tile)
-      # && !in_check_if_move?(board, tile, ply)        # test this when king implementation is done
+      !diagonally_obstructed_tile?(board, tile) &&
+      !in_check_if_move?(board, tile, ply)        # test this when king implementation is done
     end
   end
 
@@ -31,7 +39,6 @@ class Bishop < Piece
     get_full_move_range.filter do |tile|
       !board.same_color?(@color, tile.file, tile.rank) &&
       !diagonally_obstructed_tile?(board, tile)
-      # && !in_check_if_move?(board, tile, ply)        # test this when king implementation is done
     end
   end
 

@@ -22,10 +22,10 @@ class Knight < Piece
   end
 
   def get_legal_moves(board, ply)
-    # get_full_move_range.filter do |tile|
-    #   # !in_check_if_move?(board, tile, ply)        # test this when king implementation is done
-    # end
-    get_full_move_range
+    get_full_move_range.filter do |tile|
+      !in_check_if_move?(board, tile, ply)        # test this when king implementation is done
+    end
+    # get_full_move_range
   end
 
   def get_attacked_tiles(board)

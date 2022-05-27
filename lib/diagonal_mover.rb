@@ -90,9 +90,10 @@ module DiagonalMover
     tile_x = tile.file
     tile_y = tile.rank
     pieces_in_range = get_pieces_in_range(board).filter { |piece| (piece.file > this_x) && (piece.rank > this_y) }
+    piece_in_range = pieces_in_range.sort_by { |tile| tile.file}.first
 
     return false if !get_full_move_range.include?(tile)
-    return false if pieces_in_range.include?(tile)
+    return false if piece_in_range == tile
     return false if !((tile_x > this_x) && (tile_y > this_y))
 
     i = 0
@@ -111,9 +112,10 @@ module DiagonalMover
     tile_x = tile.file
     tile_y = tile.rank
     pieces_in_range = get_pieces_in_range(board).filter { |piece| (piece.file < this_x) && (piece.rank > this_y) }
-
+    piece_in_range = pieces_in_range.sort_by { |tile| tile.file}.last
+    
     return false if !get_full_move_range.include?(tile)
-    return false if pieces_in_range.include?(tile)
+    return false if piece_in_range == tile
     return false if !((tile_x < this_x) && (tile_y > this_y))
 
     i = 0
@@ -132,9 +134,10 @@ module DiagonalMover
     tile_x = tile.file
     tile_y = tile.rank
     pieces_in_range = get_pieces_in_range(board).filter { |piece| (piece.file < this_x) && (piece.rank < this_y) }
+    piece_in_range = pieces_in_range.sort_by { |tile| tile.file}.last
 
     return false if !get_full_move_range.include?(tile)
-    return false if pieces_in_range.include?(tile)
+    return false if piece_in_range == tile
     return false if !((tile_x < this_x) && (tile_y < this_y))
 
     i = 0
@@ -153,9 +156,10 @@ module DiagonalMover
     tile_x = tile.file
     tile_y = tile.rank
     pieces_in_range = get_pieces_in_range(board).filter { |piece| (piece.file > this_x) && (piece.rank < this_y) }
+    piece_in_range = pieces_in_range.sort_by { |tile| tile.file}.first
 
     return false if !get_full_move_range.include?(tile)
-    return false if pieces_in_range.include?(tile)
+    return false if piece_in_range == tile
     return false if !((tile_x > this_x) && (tile_y < this_y))
 
     i = 0

@@ -71,7 +71,7 @@ class Game
   def ply(player)
     player_move = get_move_input(player)
     if (player_move.include?("draw"))
-      make_draw_offer(player)
+      ply(player) if !make_draw_offer(player)
     elsif (player_move.include?("resign"))
       resign(player)
     else

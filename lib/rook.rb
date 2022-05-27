@@ -21,14 +21,8 @@ class Rook < Piece
     get_full_move_range.filter do |tile|
       !board.same_color?(@color, tile.file, tile.rank) &&
       !vertically_obstructed_tile?(board, tile) &&
-      !horizontally_obstructed_tile?(board, tile)
-      # && !in_check_if_move?(board, tile, ply)        # test this when king implementation is done
-
-
-      # check if this move would end up putting the friendly king in check. If it does, not legal.
-      # board_copy = board.clone
-      # board_copy.move(@position, tile, ply) # will this modify this rook's @position?
-      # return !board_copy.player_in_check?(@color)
+      !horizontally_obstructed_tile?(board, tile) &&
+      !in_check_if_move?(board, tile, ply)
     end
   end
 

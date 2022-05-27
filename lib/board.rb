@@ -7,24 +7,30 @@ require_relative "rook"
 require_relative "bishop"
 require_relative "knight"
 require_relative "piece"
-
+require_relative "board_database"
 class Board
 
   attr_reader :white_pieces
 
-  include Colorizer
+  include Colorizer, BoardDatabase
 
 
-  def initialize
-    @arr = [[" ", " ", " ", " ", " ", " ", " ", " "],
-            [" ", " ", " ", " ", " ", " ", " ", " "],
-            [" ", " ", " ", " ", " ", " ", " ", " "],
-            [" ", " ", " ", " ", " ", " ", " ", " "],
-            [" ", " ", " ", " ", " ", " ", " ", " "],
-            [" ", " ", " ", " ", " ", " ", " ", " "],
-            [" ", " ", " ", " ", " ", " ", " ", " "],
-            [" ", " ", " ", " ", " ", " ", " ", " "]]
-    set_up_board
+  def initialize(arr=nil, white_pieces=nil, black_pieces=nil)
+    if !arr && !white_pieces && !black_pieces
+      @arr = [[" ", " ", " ", " ", " ", " ", " ", " "],
+              [" ", " ", " ", " ", " ", " ", " ", " "],
+              [" ", " ", " ", " ", " ", " ", " ", " "],
+              [" ", " ", " ", " ", " ", " ", " ", " "],
+              [" ", " ", " ", " ", " ", " ", " ", " "],
+              [" ", " ", " ", " ", " ", " ", " ", " "],
+              [" ", " ", " ", " ", " ", " ", " ", " "],
+              [" ", " ", " ", " ", " ", " ", " ", " "]]
+      set_up_board
+    else
+      @arr = arr
+      @white_pieces = white_pieces
+      @black_pieces = black_pieces
+    end 
   end
 
   def get_square(file, rank)
@@ -51,7 +57,7 @@ class Board
 
     while j >= 0
       while i < 8
-        outstr += colorize(@arr[i][j], i, j)
+        outstr += colorize(get_square(i,j), i, j)
         i += 1
       end
       i = 0
@@ -68,7 +74,7 @@ class Board
     outstr = ""
     while j >= 0
       while i < 8
-        outstr += colorize(@arr[i][j], i, j)
+        outstr += colorize(get_square(i,j), i, j)
         i += 1
       end
       i = 0
@@ -118,7 +124,8 @@ class Board
 
   def put_pieces_on_board(list_of_pieces)
     list_of_pieces.each do |piece|
-      @arr[piece.file][piece.rank] = piece
+      # @arr[piece.file][piece.rank] = piece
+      update_square(piece, piece.file, piece.rank)
     end
   end
   
@@ -134,6 +141,7 @@ class Board
     elsif promotion?(piece_to_move, from, to)
       promotion()
     else
+      # p get_square(from.file, to.file)
       @arr[from.file][from.rank] = " "
       capture_piece(to) unless square_empty?(to.file, to.rank)
       @arr[to.file][to.rank] = piece_to_move
@@ -240,6 +248,9 @@ class Board
 
   def legal_move?(from, to, ply)
     piece_to_move = @arr[from.file][from.rank]
+
+    p "piece: #{piece_to_move}"
+    p "legal moves: #{piece_to_move.get_legal_moves(self, ply)}"
     piece_to_move.get_legal_moves(self, ply).include?(to)
   end
 
@@ -263,6 +274,7 @@ class Board
   # empty, or has an opponent piece on it.
   # return false if format is wrong.
   def valid_from?(player, x, y, ply)
+    # p !@arr[x][y].get_legal_moves(self, ply).empty?
     players_piece?(player, x, y) && !@arr[x][y].get_legal_moves(self, ply).empty? 
   end
 
@@ -323,3 +335,26 @@ end
 
 # my_board = Board.new
 # puts my_board.white_pieces.find{|piece| piece.is_a?(King)}.rank
+
+
+
+# real_board = Board.new
+# copy_board = real_board.clone
+
+# copy_board.update_square(Knight.new(Position.new(3, 4), "black"), 3, 4)
+# copy_board.update_square(" ", 3, 1)
+
+# puts real_board
+
+# puts copy_board
+
+
+# real_board = Board.new
+# copy_board = Marshal.load(Marshal.dump(real_board))
+
+# copy_board.update_square(Knight.new(Position.new(3, 4), "black"), 3, 4)
+# copy_board.update_square(" ", 3, 1)
+
+# puts real_board
+
+# puts copy_board

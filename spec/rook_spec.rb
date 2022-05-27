@@ -11,100 +11,67 @@ require_relative '../lib/straight_mover'
 
 describe Rook do
 
-  let(:rook_attack_pieces) {described_class.new([3,4], "white")}
-  let(:board) {Board.new}
+  subject(:rook) { described_class.new(Position.new(3,3), "white") }
+  let(:board) { instance_double(Board) }
 
   before do
-    allow(board).to receive(:set_up_board)
-    array = [[" ", " ", " ", " ", " ", " ", " ", " "],
-             [" ", " ", " ", " ", " ", " ", " ", " "],
-             [" ", " ", " ", " ", " ", " ", " ", " "],
-             [" ", " ", " ", " ", " ", " ", " ", " "],
-             [" ", " ", " ", " ", " ", " ", " ", " "],
-             [" ", " ", " ", " ", " ", " ", " ", " "],
-             [" ", " ", " ", " ", " ", " ", " ", " "],
-             [" ", " ", " ", " ", " ", " ", " ", " "]]
-    array[2][4] = Pawn.new([2,4], "black")
-    array[6][4] = Knight.new([6,4], "white")
-    array[3][6] = Bishop.new([3,6], "white")
-    array[3][0] = Knight.new([3,0], "black")
-    array[6][0] = King.new([6,0], "white")
-    array[7][7] = King.new([7,7], "black")
-    array[3][4] = rook_attack_pieces
-    board.instance_variable_set(:@arr, array)
-  end
-  
-  
+    allow(board).to receive(:square_empty?).with(0,3).and_return false
+    allow(board).to receive(:square_empty?).with(1,3).and_return false
+    allow(board).to receive(:square_empty?).with(2,3).and_return true
+    allow(board).to receive(:square_empty?).with(4,3).and_return true
+    allow(board).to receive(:square_empty?).with(5,3).and_return false
+    allow(board).to receive(:square_empty?).with(6,3).and_return true
+    allow(board).to receive(:square_empty?).with(7,3).and_return false
+    allow(board).to receive(:square_empty?).with(3,0).and_return false
+    allow(board).to receive(:square_empty?).with(3,1).and_return false
+    allow(board).to receive(:square_empty?).with(3,2).and_return true
+    allow(board).to receive(:square_empty?).with(3,4).and_return true
+    allow(board).to receive(:square_empty?).with(3,5).and_return true
+    allow(board).to receive(:square_empty?).with(3,6).and_return false
+    allow(board).to receive(:square_empty?).with(3,7).and_return false
 
-  describe "#get_tiles_attacked" do
+    allow(board).to receive(:same_color?).with("white", 0,3).and_return false
+    allow(board).to receive(:same_color?).with("white", 1,3).and_return true
+    allow(board).to receive(:same_color?).with("white", 2,3).and_return false
+    allow(board).to receive(:same_color?).with("white", 4,3).and_return false
+    allow(board).to receive(:same_color?).with("white", 5,3).and_return false
+    allow(board).to receive(:same_color?).with("white", 6,3).and_return false
+    allow(board).to receive(:same_color?).with("white", 7,3).and_return false
+    allow(board).to receive(:same_color?).with("white", 3,0).and_return true
+    allow(board).to receive(:same_color?).with("white", 3,1).and_return true
+    allow(board).to receive(:same_color?).with("white", 3,2).and_return false
+    allow(board).to receive(:same_color?).with("white", 3,4).and_return false
+    allow(board).to receive(:same_color?).with("white", 3,5).and_return false
+    allow(board).to receive(:same_color?).with("white", 3,6).and_return false
+    allow(board).to receive(:same_color?).with("white", 3,7).and_return true
+
+    allow(rook).to receive(:in_check_if_move?).with(board, Position.new(2,3), 12).and_return true
+    allow(rook).to receive(:in_check_if_move?).with(board, Position.new(4,3), 12).and_return true
+    allow(rook).to receive(:in_check_if_move?).with(board, Position.new(5,3), 12).and_return true
+    allow(rook).to receive(:in_check_if_move?).with(board, Position.new(3,2), 12).and_return true
+    allow(rook).to receive(:in_check_if_move?).with(board, Position.new(3,4), 12).and_return true
+    allow(rook).to receive(:in_check_if_move?).with(board, Position.new(3,5), 12).and_return true
+    allow(rook).to receive(:in_check_if_move?).with(board, Position.new(3,6), 12).and_return true
+  end
+
+  describe "#get_full_move_range" do
 
     context "when rook is at [3,3]" do
-      
-      position = [3,3]
-      color = "white"
-      let(:rook) {described_class.new(position, color)}
-    
       it "returns the list of tiles" do
-        result = rook.get_tiles_attacked
-        expect(result.sort).to eq([[0,3], [1,3], [2,3], [4,3], [5,3], [6,3], [7,3], [3,0], [3,1], [3,2], [3,4], [3,5], [3,6], [3,7]].sort)
+        result = rook.get_full_move_range
+        expect(result).to contain_exactly(Position.new(0,3), Position.new(1,3), Position.new(2,3), Position.new(4,3), Position.new(5,3), 
+                                          Position.new(6,3), Position.new(7,3), Position.new(3,0), Position.new(3,1), Position.new(3,2), 
+                                          Position.new(3,4), Position.new(3,5), Position.new(3,6), Position.new(3,7))
       end
     end
-
-    context "when rook is at [1,2]" do
-
-      position = [1,2]
-      color = "white"
-      let(:rook) {described_class.new(position, color)}
-
-      it "returns the list of tiles" do
-        result = rook.get_tiles_attacked
-        expect(result.sort).to eq([[1,0], [1,1], [1,3], [1,4], [1,5], [1,6], [1,7], [0,2], [2,2], [3,2], [4,2], [5,2], [6,2], [7,2]].sort)
-      end
-    end
-
-    context "when rook is at [7,7]" do
-
-      position = [7,7]
-      color = "black"
-      let(:rook) {described_class.new(position, color)}
-
-      it "returns the list of tiles" do
-        result = rook.get_tiles_attacked
-        expect(result.sort).to eq([[0,7], [1,7], [2,7], [3,7], [4,7], [5,7], [6,7], [7,0], [7,1], [7,2], [7,3], [7,4], [7,5], [7,6]].sort)
-      end
-    end
-
-    context "when rook is at [3,4]" do
-
-      position = [3,4]
-      color = "white"
-      let(:rook) {described_class.new(position, color)}
-
-      it "returns the list of tiles" do
-        result = rook.get_tiles_attacked
-        expect(result.sort).to eq([[0,4], [1,4], [2,4], [4,4], [5,4], [6,4], [7,4], [3,0], [3,1], [3,2], [3,3], [3,5], [3,6], [3,7]].sort)
-      end
-    end
-
   end
 
-  describe "#get_legal_moves" do
-
-    context "when there are pieces obstructing" do
-
-      it "doesn't include obstructed tiles" do
-        result = rook_attack_pieces.get_legal_moves(board, 1)
-        expect(result.sort).to eq([[2,4], [3,5], [3,3], [3,2], [3,1], [3,0], [4,4], [5,4]].sort)
-      end
-    end
-
-  end
-
-  describe "#pieces_in_range" do
+  describe "#get_pieces_in_range" do
 
     it "returns a list of coordinates" do
-      result = rook_attack_pieces.get_pieces_in_range(board)
-      expect(result.sort).to eq([[2,4], [6,4], [3,6], [3,0]].sort)
+      result = rook.get_pieces_in_range(board)
+      expect(result).to contain_exactly(Position.new(0,3), Position.new(1,3), Position.new(5,3), Position.new(7,3),
+                                        Position.new(3,0), Position.new(3,1), Position.new(3,6), Position.new(3,7))
     end
   end
 
@@ -113,42 +80,26 @@ describe Rook do
     context "when it is not obstructed vertically" do
       
       it "returns false" do
-        expect(rook_attack_pieces.vertically_obstructed_tile?(board, [3,5])).to be false
+        expect(rook.vertically_obstructed_tile?(board, Position.new(2,3))).to be false
       end
 
       it "returns false" do
-        expect(rook_attack_pieces.vertically_obstructed_tile?(board, [3,3])).to be false
+        expect(rook.vertically_obstructed_tile?(board, Position.new(3,6))).to be false
       end
 
       it "returns false" do
-        expect(rook_attack_pieces.vertically_obstructed_tile?(board, [3,2])).to be false
-      end
-
-      it "returns false" do
-        expect(rook_attack_pieces.vertically_obstructed_tile?(board, [3,1])).to be false
-      end
-
-      it "returns false" do
-        expect(rook_attack_pieces.vertically_obstructed_tile?(board, [3,0])).to be false
-      end
-
-      it "returns false" do
-        expect(rook_attack_pieces.vertically_obstructed_tile?(board, [5,5])).to be false
-      end
-
-      it "returns false" do
-        expect(rook_attack_pieces.vertically_obstructed_tile?(board, [1,4])).to be false
-      end
-
-      it "returns false" do
-        expect(rook_attack_pieces.vertically_obstructed_tile?(board, [7,4])).to be false
+        expect(rook.vertically_obstructed_tile?(board, Position.new(3,2))).to be false
       end
     end
 
     context "when it is obstructed vertically" do
 
       it "returns true" do
-        expect(rook_attack_pieces.vertically_obstructed_tile?(board, [3,7])).to be true
+        expect(rook.vertically_obstructed_tile?(board, Position.new(3,7))).to be true
+      end
+
+      it "returns true" do
+        expect(rook.vertically_obstructed_tile?(board, Position.new(3,0))).to be true
       end
     end
     
@@ -159,43 +110,54 @@ describe Rook do
     context "when it is not obstructed horizontally" do
 
       it "returns false" do
-        expect(rook_attack_pieces.horizontally_obstructed_tile?(board, [3,7])).to be false
+        expect(rook.horizontally_obstructed_tile?(board, Position.new(3,0))).to be false
       end
 
       it "returns false" do
-        expect(rook_attack_pieces.horizontally_obstructed_tile?(board, [3,5])).to be false
+        expect(rook.horizontally_obstructed_tile?(board, Position.new(1,3))).to be false
       end
 
       it "returns false" do
-        expect(rook_attack_pieces.horizontally_obstructed_tile?(board, [3,2])).to be false
+        expect(rook.horizontally_obstructed_tile?(board, Position.new(4,3))).to be false
       end
 
       it "returns false" do
-        expect(rook_attack_pieces.horizontally_obstructed_tile?(board, [2,4])).to be false
-      end
-
-      it "returns false" do
-        expect(rook_attack_pieces.horizontally_obstructed_tile?(board, [4,4])).to be false
-      end
-
-      it "returns false" do
-        expect(rook_attack_pieces.horizontally_obstructed_tile?(board, [5,4])).to be false
+        expect(rook.horizontally_obstructed_tile?(board, Position.new(5,3))).to be false
       end
     end
 
     context "when it is obstructed horizontally" do
 
       it "returns true" do
-        expect(rook_attack_pieces.horizontally_obstructed_tile?(board, [7,4])).to be true
+        expect(rook.horizontally_obstructed_tile?(board, Position.new(0,3))).to be true
       end
 
       it "returns true" do
-        expect(rook_attack_pieces.horizontally_obstructed_tile?(board, [0,4])).to be true
+        expect(rook.horizontally_obstructed_tile?(board, Position.new(6,3))).to be true
       end
 
       it "returns true" do
-        expect(rook_attack_pieces.horizontally_obstructed_tile?(board, [1,4])).to be true
+        expect(rook.horizontally_obstructed_tile?(board, Position.new(7,3))).to be true
       end
+    end
+  end
+
+  describe "#get_attacked_tiles" do
+
+    it "returns a list of coordinates" do
+      result = rook.get_attacked_tiles(board)
+      expect(result).to contain_exactly(Position.new(2,3), Position.new(3,2), Position.new(4,3), Position.new(5,3), 
+                                        Position.new(3,4), Position.new(3,5), Position.new(3,6))
+    end
+  end
+
+  
+
+  describe "#get_legal_moves" do
+
+    it "returns a list of coordinates" do
+      result = rook.get_legal_moves(board, 12)
+      expect(result).to eq([])
     end
   end
 end

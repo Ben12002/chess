@@ -23,8 +23,8 @@ class Queen < Piece
       !board.same_color?(@color, tile.file, tile.rank) &&
       !vertically_obstructed_tile?(board, tile) &&
       !horizontally_obstructed_tile?(board, tile) &&
-      !diagonally_obstructed_tile?(board, tile)
-      # && !in_check_if_move?(board, tile, ply)        # test this when king implementation is done
+      !diagonally_obstructed_tile?(board, tile) &&
+      !in_check_if_move?(board, tile, ply)        # test this when king implementation is done
 
       
     end

@@ -60,12 +60,14 @@ class Pawn < Piece
   def get_legal_moves(board, ply)
     valid_non_capture_moves = get_vertical_moves.filter do |tile| 
       board.square_empty?(tile.file, tile.rank) &&
-      !(@moved_already && double_move?(tile))
+      !(@moved_already && double_move?(tile)) &&
+      !in_check_if_move?(board, tile, ply)
     end
 
     valid_capture_moves = get_attacked_tiles(board).filter do |tile| 
       !board.same_color?(@color, tile.file, tile.rank) && 
-      (!board.square_empty?(tile.file, tile.rank) || board.can_en_passant?(@color, ply, tile))
+      (!board.square_empty?(tile.file, tile.rank) || board.can_en_passant?(@color, ply, tile)) &&
+      !in_check_if_move?(board, tile, ply)
     
     end
     valid_non_capture_moves + valid_capture_moves
