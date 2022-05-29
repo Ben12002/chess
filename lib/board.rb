@@ -7,12 +7,12 @@ require_relative "rook"
 require_relative "bishop"
 require_relative "knight"
 require_relative "piece"
-require_relative "board_database"
+
 class Board
 
   attr_reader :white_pieces
 
-  include Colorizer, BoardDatabase
+  include Colorizer
 
 
   def initialize(arr=nil, white_pieces=nil, black_pieces=nil)
@@ -174,6 +174,7 @@ class Board
     capture_piece(opponent_pawn)
     
     piece_to_move.move(to, ply)
+    update_square(" ", from.file, from.rank)
     update_square(piece_to_move, to.file, to.rank)
   end
 
@@ -225,7 +226,6 @@ class Board
 
   def rook_moved_already?(color, file, rank)
     pieces = color == "white" ? @white_pieces : @black_pieces
-
     pieces.find do |piece| 
       piece.is_a?(Rook) &&
       !piece.moved_already &&
@@ -238,8 +238,6 @@ class Board
     captured_piece = @arr[position.file][position.rank]
     @arr[position.file][position.rank] = " "
     if captured_piece.color == "white"
-      # will this delete more than 1 instance? e.g delete all rooks instead of only the intended one?
-      #https://ruby-doc.org/core-3.0.1/Array.html#method-i-delete
       @white_pieces.delete(captured_piece)    
     else
       @black_pieces.delete(captured_piece)
@@ -248,9 +246,6 @@ class Board
 
   def legal_move?(from, to, ply)
     piece_to_move = @arr[from.file][from.rank]
-
-    p "piece: #{piece_to_move}"
-    p "legal moves: #{piece_to_move.get_legal_moves(self, ply)}"
     piece_to_move.get_legal_moves(self, ply).include?(to)
   end
 
@@ -263,9 +258,7 @@ class Board
   # return all tiles attacked by pieces of a given color.
   def all_attacked_tiles(color)
     pieces = (color == "white") ? @white_pieces : @black_pieces
-    # pieces.reduce([]){|acc, curr| acc + curr.get_attacked_tiles(self)}
     pieces.reduce([]) do |acc, curr| 
-      # p curr
       acc + curr.get_attacked_tiles(self)
     end
   end
@@ -274,7 +267,6 @@ class Board
   # empty, or has an opponent piece on it.
   # return false if format is wrong.
   def valid_from?(player, x, y, ply)
-    # p !@arr[x][y].get_legal_moves(self, ply).empty?
     players_piece?(player, x, y) && !@arr[x][y].get_legal_moves(self, ply).empty? 
   end
 
@@ -332,29 +324,3 @@ class Board
   end
 
 end
-
-# my_board = Board.new
-# puts my_board.white_pieces.find{|piece| piece.is_a?(King)}.rank
-
-
-
-# real_board = Board.new
-# copy_board = real_board.clone
-
-# copy_board.update_square(Knight.new(Position.new(3, 4), "black"), 3, 4)
-# copy_board.update_square(" ", 3, 1)
-
-# puts real_board
-
-# puts copy_board
-
-
-# real_board = Board.new
-# copy_board = Marshal.load(Marshal.dump(real_board))
-
-# copy_board.update_square(Knight.new(Position.new(3, 4), "black"), 3, 4)
-# copy_board.update_square(" ", 3, 1)
-
-# puts real_board
-
-# puts copy_board
