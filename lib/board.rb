@@ -7,30 +7,30 @@ require_relative "rook"
 require_relative "bishop"
 require_relative "knight"
 require_relative "piece"
+require_relative "display"
 
 class Board
 
   attr_reader :white_pieces
 
-  include Colorizer
+  include Colorizer, Display
 
 
-  def initialize(arr=nil, white_pieces=nil, black_pieces=nil)
-    if !arr && !white_pieces && !black_pieces
-      @arr = [[" ", " ", " ", " ", " ", " ", " ", " "],
-              [" ", " ", " ", " ", " ", " ", " ", " "],
-              [" ", " ", " ", " ", " ", " ", " ", " "],
-              [" ", " ", " ", " ", " ", " ", " ", " "],
-              [" ", " ", " ", " ", " ", " ", " ", " "],
-              [" ", " ", " ", " ", " ", " ", " ", " "],
-              [" ", " ", " ", " ", " ", " ", " ", " "],
-              [" ", " ", " ", " ", " ", " ", " ", " "]]
-      set_up_board
-    else
-      @arr = arr
-      @white_pieces = white_pieces
-      @black_pieces = black_pieces
-    end 
+  def initialize()
+    @arr = [[" ", " ", " ", " ", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", " ", " "]]
+    set_up_board
+    @board_states = []
+  end
+
+  def ==(other)
+    self.to_s == other.to_s
   end
 
   def get_square(file, rank)
@@ -43,29 +43,6 @@ class Board
 
   def dark_tile?(file, rank)
     (file - rank).abs.even?
-  end
-
-  # Displays board in different perspectives depending on current player.
-  def display(current_player)
-  end
-
-  # Displays board in different perspectives depending on current player.
-  def simple_display_with_index
-    i = 0
-    j = 7
-    outstr = "\n"
-
-    while j >= 0
-      while i < 8
-        outstr += colorize(get_square(i,j), i, j)
-        i += 1
-      end
-      i = 0
-      outstr += " #{j} \n"
-      j -= 1
-    end
-    outstr += " 0  1  2  3  4  5  6  7"
-    puts outstr
   end
 
   def to_s
@@ -124,38 +101,34 @@ class Board
 
   def put_pieces_on_board(list_of_pieces)
     list_of_pieces.each do |piece|
-      # @arr[piece.file][piece.rank] = piece
       update_square(piece, piece.file, piece.rank)
     end
   end
   
   def move(from, to, ply)
-    piece_to_move = @arr[from.file][from.rank]
-    
+    piece_to_move = get_square(from.file, from.rank)
     if castle?(piece_to_move, from, to)
-      castle(from, to) 
+      castle(from, to, ply) 
     elsif en_passant?(piece_to_move, from, to)
       en_passant(from, to, ply)
-    elsif pawn_double_move?(piece_to_move, from, to)
-      pawn_double_move()
     elsif promotion?(piece_to_move, from, to)
       promotion()
     else
-      # p get_square(from.file, to.file)
-      @arr[from.file][from.rank] = " "
+      update_square(" ", from.file, from.rank)
       capture_piece(to) unless square_empty?(to.file, to.rank)
-      @arr[to.file][to.rank] = piece_to_move
+      update_square(piece_to_move, to.file, to.rank)
       piece_to_move.move(to, ply)
     end
-    # Update pawns' en_passantable status
-    update_all_pawns_status(ply)
+    update_board_states
   end
 
-  def update_all_pawns_status(ply)
+  def update_board_states
+    board_copy = Marshal.load(Marshal.dump(self))
+    @board_states.push(board_copy.to_s)
   end
 
-  def pawn_double_move?(piece_to_move, from, to)
-    false
+  def threefold_repetition?
+    @board_states.filter {|state| state == self.to_s}.length == 3
   end
 
   def promotion?(piece_to_move, from, to)
@@ -191,52 +164,96 @@ class Board
     square_empty?(to.file, to.rank) && piece_to_move.get_attacked_tiles(self).include?(to) && same_color?(opposite_color, tile_beside.file, tile_beside.rank)
   end
 
-  def castle(from, to)
-    piece_to_move = @arr[from.file][from.rank]
+  def castle(from, to, ply)
+    piece_to_move = get_square(from.file, from.rank)
     # short castle
     if to == Position.new(6,from.rank)
       rook = get_short_rook(piece_to_move.color)
-      @arr[7][from.rank] = " "
-      @arr[5][from.rank] = rook
+      previous_rook_file = rook.file
+      new_rook_file = 5
     # long castle
     elsif to == Position.new(2,from.rank)
       rook = get_long_rook(piece_to_move.color)
-      @arr[0][from.rank] = " "
-      @arr[3][from.rank] = rook
+      previous_rook_file = rook.file
+      new_rook_file = 3
     end
-    rook.move()
-    piece_to_move.move(to, ply)
-    @arr[to.file][to.rank] = piece_to_move
-  end
 
+    # move rook
+    update_square(" ", previous_rook_file, from.rank)
+    update_square(rook, new_rook_file, from.rank)
+    rook.move(Position.new(new_rook_file, from.rank), ply)
+
+    # move king
+    update_square(" ", from.file, from.rank)
+    piece_to_move.move(to, ply)
+    update_square(piece_to_move, to.file, to.rank)
+  end
+  
   def castle?(piece_to_move, from, to)
     return false if !piece_to_move.is_a?(King)
     (from.file == 4) && ((from.file - to.file).abs == 2)
   end
 
-  def get_short_rook(color)
-    rank = color == "white" ? 0 : 7
-    @arr[7][rank]
+  def short_castle_tiles_threatened?(color)
+    rook_rank = color == "white" ? 0 : 7
+    threatened_tile?(color, Position.new(5,rook_rank)) || threatened_tile?(color, Position.new(6,rook_rank))
   end
 
-  def get_long_rook(color)
-    rank = color == "white" ? 0 : 7
-    @arr[0][rank]
+  def long_castle_tiles_threatened?(color)
+    rook_rank = color == "white" ? 0 : 7
+    threatened_tile?(color, Position.new(2,rook_rank)) || threatened_tile?(color, Position.new(3,rook_rank))
+  end
+
+  def short_castle_tiles_obstructed?(color)
+    short_rook_file = color == "white" ? 7 : 0
+    rook_rank = color == "white" ? 0 : 7
+    !square_empty?(5,rook_rank) || !square_empty?(6,rook_rank)
+  end
+
+  def long_castle_tiles_obstructed?(color)
+    long_rook_file = color == "white" ? 0 : 7
+    rook_rank = color == "white" ? 0 : 7
+    !square_empty?(1,rook_rank) || !square_empty?(2,rook_rank) || !square_empty?(3,rook_rank)
   end
 
   def rook_moved_already?(color, file, rank)
     pieces = color == "white" ? @white_pieces : @black_pieces
     pieces.find do |piece| 
       piece.is_a?(Rook) &&
-      !piece.moved_already &&
+      piece.moved_already &&
       piece.file == file && 
       piece.rank == rank
     end
   end
 
+   # return all tiles attacked by pieces of a given color.
+   def all_attacked_tiles(color)
+    pieces = (color == "white") ? @white_pieces : @black_pieces
+    pieces.reduce([]) do |acc, curr| 
+      acc + curr.get_attacked_tiles(self)
+    end
+  end
+
+  # whether a tile is threatened from the perspective of color.
+  def threatened_tile?(color, tile)
+    opposite_color = (color == "white") ? "black" : "white"
+    all_attacked_tiles(opposite_color).include?(tile)
+  end
+
+  def get_short_rook(color)
+    rank = color == "white" ? 0 : 7
+    get_square(7, rank)
+  end
+
+  def get_long_rook(color)
+    rank = color == "white" ? 0 : 7
+    get_square(0, rank)
+  end
+
   def capture_piece(position)
-    captured_piece = @arr[position.file][position.rank]
-    @arr[position.file][position.rank] = " "
+    captured_piece = get_square(position.file, position.rank)
+    update_square(" ", position.file, position.rank)
+    
     if captured_piece.color == "white"
       @white_pieces.delete(captured_piece)    
     else
@@ -253,14 +270,6 @@ class Board
   def player_in_check?(color)
     return @white_pieces.find{|piece| piece.is_a?(King)}.in_check?(self) if color == "white"
     return @black_pieces.find{|piece| piece.is_a?(King)}.in_check?(self) if color == "black"
-  end
-
-  # return all tiles attacked by pieces of a given color.
-  def all_attacked_tiles(color)
-    pieces = (color == "white") ? @white_pieces : @black_pieces
-    pieces.reduce([]) do |acc, curr| 
-      acc + curr.get_attacked_tiles(self)
-    end
   end
 
   # return false if square referred to by from is either 
@@ -282,12 +291,6 @@ class Board
     !square_empty?(x, y) && @arr[x][y].color == color
   end
 
-  # whether a tile is threatened from the perspective of color.
-  def threatened_tile?(color, tile)
-    opposite_color = (color == "white") ? "black" : "white"
-    all_attacked_tiles(opposite_color).include?(tile)
-  end
-
   def get_all_legal_moves(color, ply)
     pieces = (color == "white") ? @white_pieces : @black_pieces
     pieces.reduce([]){|acc, curr| acc + curr.get_legal_moves(self, ply)}
@@ -306,11 +309,40 @@ class Board
   end
 
   def insufficient_material?
-    false #stub
+    king_vs_king? ||
+    king_and_knight_vs_king? ||
+    king_and_bishop_vs_king? ||
+    same_color_bishop_draw?
   end
 
-  def threefold_repetition?(ply)
-    false #stub
+  def king_vs_king?
+    @white_pieces.length == 1 && @black_pieces.length == 1
+  end
+
+  def king_and_knight_vs_king?
+    [@white_pieces.length, @black_pieces.length].max <= 2 &&
+    (@white_pieces.filter { |piece| piece.is_a?(Knight) || piece.is_a?(King)}.length == 2 && @black_pieces.length == 1) ||
+    (@black_pieces.filter { |piece| piece.is_a?(Knight) || piece.is_a?(King)}.length == 2 && @white_pieces.length == 1)
+  end
+
+  def king_and_bishop_vs_king?
+    [@white_pieces.length, @black_pieces.length].max <= 2 &&
+    (@white_pieces.filter { |piece| piece.is_a?(Bishop) || piece.is_a?(King)}.length == 2 && @black_pieces.length == 1) ||
+    (@black_pieces.filter { |piece| piece.is_a?(Bishop) || piece.is_a?(King)}.length == 2 && @white_pieces.length == 1)
+  end
+
+  def same_color_bishop_draw?
+    return false if !bishop_vs_bishop?
+    black_bishop = @black_pieces.find { |piece| piece.is_a?(Bishop)}
+    white_bishop = @white_pieces.find { |piece| piece.is_a?(Bishop)}
+    dark_tile?(white_bishop.file, white_bishop.rank) == dark_tile?(black_bishop.file, black_bishop.rank)
+  end
+
+  def bishop_vs_bishop?
+    @white_pieces.length == 2 && 
+    @black_pieces.length == 2 &&
+    (@white_pieces.filter { |piece| piece.is_a?(Bishop) || piece.is_a?(king) }.length == 2) &&
+    (@black_pieces.filter { |piece| piece.is_a?(Bishop) || piece.is_a?(king) }.length == 2)
   end
 
   def can_en_passant?(color, ply, tile)
@@ -324,3 +356,9 @@ class Board
   end
 
 end
+
+
+
+# real_board = Board.new
+# board_copy = Marshal.load(Marshal.dump(real_board))
+# puts real_board == board_copy

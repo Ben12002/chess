@@ -60,7 +60,10 @@ class Game
       current_move = ply(current_player)
       
 
-      return if game_over?(current_player)
+      if game_over?(current_player)
+        @board.simple_display_with_index
+        break
+      end
 
       @ply += 1
       @turn += 1 if current_player = @black
@@ -138,7 +141,7 @@ class Game
     checkmate = @board.checkmate?(current_player.color, @ply)
     stalemate = @board.stalemate?(current_player.color, @ply)
     insufficient_material = @board.insufficient_material?
-    threefold_repetition = @board.threefold_repetition?(@ply)
+    threefold_repetition = @board.threefold_repetition?
     @white_resign || @black_resign || @draw || checkmate || stalemate || threefold_repetition
   end
 
@@ -146,9 +149,11 @@ class Game
     return puts "White resigned. Black wins!" if @white_resign
     return puts "Black resigned. White wins!" if @black_resign
     return puts "Draw!" if @draw
-    return puts "White wins!" if @board.winner = "white"
-    return puts "Black wins!" if @board.winner = "black"
-    return puts "Stalemate..." if @board.stalemate?
+    return puts "White wins!" if @board.checkmate?("black", @ply)
+    return puts "Black wins!" if @board.checkmate?("white", @ply)
+    return puts "Stalemate..." if @board.stalemate?("white", @ply) || @board.stalemate?("black", @ply)
+    return puts "Draw! Threefold repetition!" if @board.threefold_repetition?
+    return puts "Draw! Insufficient material!" if @board.insufficient_material?
   end
 
   

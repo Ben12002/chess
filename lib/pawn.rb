@@ -33,7 +33,7 @@ class Pawn < Piece
 
     if @color == "black"
       tiles_attacked.push(Position.new(x + 1, y - 1)) if (x + 1 < 8) && (y - 1 >= 0)
-      tiles_attacked.push(Position.new(x - 1, y - 1)) if (x - 1 >= 0) && (y - 1 >= 8)
+      tiles_attacked.push(Position.new(x - 1, y - 1)) if (x - 1 >= 0) && (y - 1 >= 0)
     end
 
     tiles_attacked
@@ -57,20 +57,46 @@ class Pawn < Piece
    get_vertical_moves + get_attacked_tiles(board, ply)
   end
 
+  # def get_legal_moves(board, ply)
+  #   valid_non_capture_moves = get_vertical_moves.filter do |tile| 
+  #     board.square_empty?(tile.file, tile.rank) &&
+  #     !(@moved_already && double_move?(tile)) &&
+  #     !in_check_if_move?(board, tile, ply)
+  #   end
+
+  #   valid_capture_moves = get_attacked_tiles(board).filter do |tile| 
+  #     !board.same_color?(@color, tile.file, tile.rank) && 
+  #     (!board.square_empty?(tile.file, tile.rank) || board.can_en_passant?(@color, ply, tile)) &&
+  #     !in_check_if_move?(board, tile, ply)
+    
+  #   end
+  #   valid_non_capture_moves + valid_capture_moves
+  # end
+
+  # def get_legal_vertical_moves(board, ply)
+  # end
+
+  # def get_legal_capture_moves(board, ply)
+  # end
+
   def get_legal_moves(board, ply)
-    valid_non_capture_moves = get_vertical_moves.filter do |tile| 
+    get_legal_vertical_moves(board, ply) + get_legal_capture_moves(board, ply)
+  end
+
+  def get_legal_vertical_moves(board, ply)
+    get_vertical_moves.filter do |tile| 
       board.square_empty?(tile.file, tile.rank) &&
       !(@moved_already && double_move?(tile)) &&
       !in_check_if_move?(board, tile, ply)
     end
+  end
 
-    valid_capture_moves = get_attacked_tiles(board).filter do |tile| 
+  def get_legal_capture_moves(board, ply)
+    get_attacked_tiles(board).filter do |tile| 
       !board.same_color?(@color, tile.file, tile.rank) && 
       (!board.square_empty?(tile.file, tile.rank) || board.can_en_passant?(@color, ply, tile)) &&
       !in_check_if_move?(board, tile, ply)
-    
     end
-    valid_non_capture_moves + valid_capture_moves
   end
 
   def double_move?(tile)
