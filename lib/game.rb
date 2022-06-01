@@ -146,35 +146,6 @@ class Game
     end
   end
 
-  def get_move_input(player)
-    while true
-      print "Please enter the coordinates of a piece you'd like to move (#{player.name}'s turn): "
-      from_input = gets.chomp.downcase
-      return from_input if COMMANDS.include?(from_input)
-      
-      if valid_move_format?(from_input)
-        from_array = from_input.split(",")
-        from = Position.new(from_array[0].to_i, from_array[1].to_i)
-        break if @board.valid_from?(player, from.file, from.rank, @ply)
-      end
-      puts "Please enter a valid move"
-    end
-
-    while true
-      print "Please enter the coordinates where you'd like to move the piece: "
-      to_input = gets.chomp
-      return to_input if COMMANDS.include?(to_input)
-      if (valid_move_format?(to_input)
-        to_array = to_input.split(",")
-        to = Position.new(to_array[0].to_i, to_array[1].to_i)
-        break if @board.legal_move?(from, to, @ply))
-      end
-      puts "Please enter a valid move"
-    end
-
-    [from, to]
-  end
-
   def valid_move_format?(input)
     input.length == 3 && input.match?(/[0-7],[0-7]/) 
   end
@@ -215,5 +186,74 @@ class Game
     return puts "Draw! Threefold repetition!" if @board.threefold_repetition?
     return puts "Draw! Insufficient material!" if @board.insufficient_material?
   end
+
+  # def get_move_input(player)
+  #   while true
+  #     print "Please enter the coordinates of a piece you'd like to move (#{player.name}'s turn): "
+  #     from_input = gets.chomp.downcase
+  #     return from_input if COMMANDS.include?(from_input)
+      
+  #     if valid_move_format?(from_input)
+  #       from_array = from_input.split(",")
+  #       from = Position.new(from_array[0].to_i, from_array[1].to_i)
+  #       break if @board.valid_from?(player, from.file, from.rank, @ply)
+  #     end
+  #     puts "Please enter a valid move"
+  #   end
+
+  #   while true
+  #     print "Please enter the coordinates where you'd like to move the piece: "
+  #     to_input = gets.chomp
+  #     return to_input if COMMANDS.include?(to_input)
+  #     if (valid_move_format?(to_input)
+  #       to_array = to_input.split(",")
+  #       to = Position.new(to_array[0].to_i, to_array[1].to_i)
+  #       break if @board.legal_move?(from, to, @ply))
+  #     end
+  #     puts "Please enter a valid move"
+  #   end
+
+  #   [from, to]
+  # end
+
+  def get_move_input(player)
+    from = get_from_input(player)
+    return from if COMMANDS.include?(from)
+    to = get_to_input(player, from)
+    return to if COMMANDS.include?(to)
+    [from, to]
+  end
+
+  def get_from_input(player)
+    while true
+      print "Please enter the coordinates of a piece you'd like to move (#{player.name}'s turn): "
+      from_input = gets.chomp.downcase
+      return from_input if COMMANDS.include?(from_input)
+      
+      if valid_move_format?(from_input)
+        from_array = from_input.split(",")
+        from = Position.new(from_array[0].to_i, from_array[1].to_i)
+        return from if @board.valid_from?(player, from.file, from.rank, @ply)
+      end
+      puts "Please enter a valid move"
+    end
+  end
+
+  def get_to_input(player, from)
+    while true
+      print "Please enter the coordinates where you'd like to move the piece: "
+      to_input = gets.chomp
+      return to_input if COMMANDS.include?(to_input)
+      if (valid_move_format?(to_input)
+        to_array = to_input.split(",")
+        to = Position.new(to_array[0].to_i, to_array[1].to_i)
+        return to if @board.legal_move?(from, to, @ply))
+      end
+      puts "Please enter a valid move"
+    end
+  end
+
+
+
   
 end

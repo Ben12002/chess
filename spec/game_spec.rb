@@ -9,6 +9,7 @@ describe Game do
 
   before do
     game.instance_variable_set(:@board, instance_double(Board))
+    game.instance_variable_set(:@white, instance_double(Player, name: "hello"))
   end
 
   describe "#get_name_input" do
@@ -77,39 +78,147 @@ describe Game do
 
   describe "#get_promotion_input" do
     context "when valid name" do
+      it "returns the input" do
+        allow(game).to receive(:gets).and_return("queen")
+        result = game.get_promotion_input
+        expect(result).to eq("queen")
+      end
     end
 
     context "when invalid, then valid" do
+      it "puts an error message, then returns the input" do
+        invalid_input = "hello"
+        valid_input = "knight"
+        allow(game).to receive(:gets).and_return(invalid_input, valid_input)
+        allow(game).to receive(:puts).with("please enter a valid input. ").once
+        result = game.get_promotion_input
+        expect(result).to eq(valid_input)
+      end
     end
   end
 
-  describe "#valid_move_format" do
+  describe "#valid_move_format?" do
     context "when valid" do
+      it "returns true" do
+        expect(game.valid_move_format?("3,3")).to be true
+      end
     end
 
     context "when invalid" do
       context "when out of bounds" do
+        it "returns true" do
+          expect(game.valid_move_format?("8,7")).to be false
+        end
       end
 
       context "when wrong format" do
+        it "returns true" do
+          expect(game.valid_move_format?("333fqs")).to be false
+        end
       end
     end
   end
 
-
-  describe "#get_move_input" do
+  describe "#get_from_input" do
   
     context "when valid move" do
+      it "returns the position" do
+        board = game.instance_variable_get(:@board)
+        ply = game.instance_variable_get(:@ply)
+        move_input = [Position.new(3,1), Position.new(3,3)]
+        white = game.instance_variable_get(:@white)
+        valid_input = "3,1"
+
+        allow(game).to receive(:gets).and_return(valid_input)
+        allow(board).to receive(:valid_from?).with(white, 3, 1, ply).and_return true
+        result = game.get_from_input(white)
+        expect(result).to eq(Position.new(3,1))
+      end
     end
 
     context "when valid command" do
+      it "returns the command" do
+        board = game.instance_variable_get(:@board)
+        ply = game.instance_variable_get(:@ply)
+        move_input = [Position.new(3,1), Position.new(3,3)]
+        white = game.instance_variable_get(:@white)
+        valid_input = "help"
+
+        allow(game).to receive(:gets).and_return(valid_input)
+        result = game.get_from_input(white)
+        expect(result).to eq(valid_input)
+      end
     end
 
-    context "when invalid twice, then valid" do
+    context "when invalid, then valid" do
+      it "puts an error message, then returns the position" do
+        board = game.instance_variable_get(:@board)
+        ply = game.instance_variable_get(:@ply)
+        move_input = [Position.new(3,1), Position.new(3,3)]
+        white = game.instance_variable_get(:@white)
+        valid_input = "3,1"
+        invalid_input = "8,8"
+
+        allow(game).to receive(:gets).and_return(invalid_input, valid_input)
+        allow(board).to receive(:valid_from?).with(white, 8, 8, ply).and_return false
+        allow(board).to receive(:valid_from?).with(white, 3, 1, ply).and_return true
+
+        expect(game).to receive(:puts).with("Please enter a valid move")
+        result = game.get_from_input(white)
+        expect(result).to eq(Position.new(3,1))
+      end
     end
   end
 
-
-
+  describe "#get_to_input" do
   
+    context "when valid move" do
+      it "returns the position" do
+        board = game.instance_variable_get(:@board)
+        ply = game.instance_variable_get(:@ply)
+        move_input = [Position.new(3,1), Position.new(3,3)]
+        white = game.instance_variable_get(:@white)
+        from = Position.new(3,1)
+        valid_input = "3,3"
+
+        allow(game).to receive(:gets).and_return(valid_input)
+        allow(board).to receive(:legal_move?).with(from, Position.new(3,3), ply).and_return true
+        result = game.get_to_input(white, from)
+        expect(result).to eq(Position.new(3,3))
+      end
+    end
+
+    context "when valid command" do
+      it "returns the command" do
+        board = game.instance_variable_get(:@board)
+        ply = game.instance_variable_get(:@ply)
+        move_input = [Position.new(3,1), Position.new(3,3)]
+        white = game.instance_variable_get(:@white)
+        from = Position.new(3,1)
+        valid_input = "resign"
+
+        allow(game).to receive(:gets).and_return(valid_input)
+        result = game.get_to_input(white, from)
+        expect(result).to eq("resign")
+      end
+    end
+
+    context "when invalid, then valid" do
+      it "returns the command" do
+        board = game.instance_variable_get(:@board)
+        ply = game.instance_variable_get(:@ply)
+        move_input = [Position.new(3,1), Position.new(3,3)]
+        white = game.instance_variable_get(:@white)
+        from = Position.new(3,1)
+        invalid_input = "3,4"
+        valid_input = "resign"
+
+        allow(game).to receive(:gets).and_return(invalid_input, valid_input)
+        allow(board).to receive(:legal_move?).with(from, Position.new(3,4), ply).and_return false
+        expect(game).to receive(:puts).with("Please enter a valid move")
+        result = game.get_to_input(white, from)
+        expect(result).to eq("resign")
+      end
+    end
+  end
 end
