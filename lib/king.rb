@@ -28,7 +28,7 @@ class King < Piece
     full_move_range.push(Position.new(x + 1, y)) if (x + 1) < 8
     full_move_range.push(Position.new(x - 1, y)) if (x - 1) >= 0
 
-    full_move_range.push(Position.new(x + 1, y - 1)) if (x + 1) >= 0 && (y - 1) >= 0
+    full_move_range.push(Position.new(x + 1, y - 1)) if (x + 1) < 8 && (y - 1) >= 0
     full_move_range.push(Position.new(x, y - 1)) if (y - 1) >= 0 
     full_move_range.push(Position.new(x - 1, y - 1)) if (x - 1) >= 0 && (y - 1) >= 0
     full_move_range

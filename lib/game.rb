@@ -142,7 +142,7 @@ class Game
     stalemate = @board.stalemate?(current_player.color, @ply)
     insufficient_material = @board.insufficient_material?
     threefold_repetition = @board.threefold_repetition?
-    @white_resign || @black_resign || @draw || checkmate || stalemate || threefold_repetition
+    @white_resign || @black_resign || @draw || checkmate || stalemate || threefold_repetition || insufficient_material
   end
 
   def game_results
@@ -155,9 +155,5 @@ class Game
     return puts "Draw! Threefold repetition!" if @board.threefold_repetition?
     return puts "Draw! Insufficient material!" if @board.insufficient_material?
   end
-
-  
-  
-
   
 end

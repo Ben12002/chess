@@ -25,19 +25,8 @@ class Board
             [" ", " ", " ", " ", " ", " ", " ", " "],
             [" ", " ", " ", " ", " ", " ", " ", " "],
             [" ", " ", " ", " ", " ", " ", " ", " "]]
-    # set_up_board
-    set_promotion_board
+    set_up_board
     @board_states = []
-  end
-
-  def set_promotion_board
-    @white_pieces = []
-    @white_pieces.push(Pawn.new(Position.new(4,6), "white"))
-    @white_pieces.push(King.new(Position.new(0,0), "white"))
-    @black_pieces = []
-    @black_pieces.push(King.new(Position.new(7,0), "black"))
-    put_pieces_on_board(@white_pieces)
-    put_pieces_on_board(@black_pieces)
   end
 
   def ==(other)
@@ -123,12 +112,17 @@ class Board
     elsif en_passant?(piece_to_move, from, to)
       en_passant(from, to, ply)
     else
-      update_square(" ", from.file, from.rank)
-      capture_piece(to) unless square_empty?(to.file, to.rank)
-      update_square(piece_to_move, to.file, to.rank)
-      piece_to_move.move(to, ply)
+      regular_move(from, to, ply)
     end
     update_board_states
+  end
+
+  def regular_move(from, to, ply)
+    piece_to_move = get_square(from.file, from.rank)
+    update_square(" ", from.file, from.rank)
+    capture_piece(to) unless square_empty?(to.file, to.rank)
+    update_square(piece_to_move, to.file, to.rank)
+    piece_to_move.move(to, ply)
   end
 
   def update_board_states
@@ -204,7 +198,9 @@ class Board
       tile_beside = Position.new(to.file, to.rank + 1)
       opposite_color = "white"
     end
-    square_empty?(to.file, to.rank) && piece_to_move.get_attacked_tiles(self).include?(to) && same_color?(opposite_color, tile_beside.file, tile_beside.rank)
+    square_empty?(to.file, to.rank) && 
+    piece_to_move.get_attacked_tiles(self).include?(to) && 
+    same_color?(opposite_color, tile_beside.file, tile_beside.rank)
   end
 
   def castle(from, to, ply)
@@ -388,9 +384,3 @@ class Board
   end
 
 end
-
-
-
-# real_board = Board.new
-# board_copy = Marshal.load(Marshal.dump(real_board))
-# puts real_board == board_copy
