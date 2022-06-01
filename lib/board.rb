@@ -25,8 +25,19 @@ class Board
             [" ", " ", " ", " ", " ", " ", " ", " "],
             [" ", " ", " ", " ", " ", " ", " ", " "],
             [" ", " ", " ", " ", " ", " ", " ", " "]]
-    set_up_board
+    # set_up_board
+    set_promotion_board
     @board_states = []
+  end
+
+  def set_promotion_board
+    @white_pieces = []
+    @white_pieces.push(Pawn.new(Position.new(4,6), "white"))
+    @white_pieces.push(King.new(Position.new(0,0), "white"))
+    @black_pieces = []
+    @black_pieces.push(King.new(Position.new(7,0), "black"))
+    put_pieces_on_board(@white_pieces)
+    put_pieces_on_board(@black_pieces)
   end
 
   def ==(other)
@@ -111,8 +122,6 @@ class Board
       castle(from, to, ply) 
     elsif en_passant?(piece_to_move, from, to)
       en_passant(from, to, ply)
-    elsif promotion?(piece_to_move, from, to)
-      promotion()
     else
       update_square(" ", from.file, from.rank)
       capture_piece(to) unless square_empty?(to.file, to.rank)
@@ -131,8 +140,42 @@ class Board
     @board_states.filter {|state| state == self.to_s}.length == 3
   end
 
-  def promotion?(piece_to_move, from, to)
-    false
+  def promotion?(from, to)
+    piece_to_move = get_square(from.file, from.rank)
+    return false if !piece_to_move.is_a?(Pawn)
+    (piece_to_move.color == "white" && to.rank == 7) ||
+    (piece_to_move.color == "black" && to.rank == 0)
+  end
+
+  def promote(from, to, piece_type)
+    pawn_to_promote = get_square(from.file, from.rank)
+    pieces = (pawn_to_promote.color == "white") ? @white_pieces : @black_pieces
+    capture_piece(from)
+    
+    case piece_type
+    when "queen"
+      new_piece = Queen.new(to, pawn_to_promote.color)
+    when "rook"
+      new_piece = Rook.new(to, pawn_to_promote.color)
+    when "bishop"
+      new_piece =  Bishop.new(to, pawn_to_promote.color)
+    when "knight"
+      new_piece = Knight.new(to, pawn_to_promote.color)
+    end
+    # these two lines could be turned into a #add_piece method
+    pieces.push(new_piece)
+    update_square(new_piece, to.file, to.rank)
+  end
+
+  def capture_piece(position)
+    captured_piece = get_square(position.file, position.rank)
+    update_square(" ", position.file, position.rank)
+    
+    if captured_piece.color == "white"
+      @white_pieces.delete(captured_piece)    
+    else
+      @black_pieces.delete(captured_piece)
+    end
   end
 
   def en_passant(from, to, ply)
@@ -248,17 +291,6 @@ class Board
   def get_long_rook(color)
     rank = color == "white" ? 0 : 7
     get_square(0, rank)
-  end
-
-  def capture_piece(position)
-    captured_piece = get_square(position.file, position.rank)
-    update_square(" ", position.file, position.rank)
-    
-    if captured_piece.color == "white"
-      @white_pieces.delete(captured_piece)    
-    else
-      @black_pieces.delete(captured_piece)
-    end
   end
 
   def legal_move?(from, to, ply)

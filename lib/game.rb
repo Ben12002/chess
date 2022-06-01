@@ -12,8 +12,6 @@ class Game
     @white_resign = false
     @black_resign = false
     @draw = false
-    @move_list = []
-    @algebraic_notation_mode = false # an_mode is a flag which indicates whether the user should input a move in algebraic notation or not.
   end
 
   def play
@@ -53,18 +51,12 @@ class Game
   end
 
   def turns
+    @board.simple_display_with_index
     loop do
       current_player = @ply.odd? ? @black : @white
-      @board.simple_display_with_index
-
+      return if game_over?(current_player)
       current_move = ply(current_player)
-      
-
-      if game_over?(current_player)
-        @board.simple_display_with_index
-        break
-      end
-
+      @board.simple_display_with_index
       @ply += 1
       @turn += 1 if current_player = @black
     end
@@ -77,12 +69,22 @@ class Game
       ply(player) if !make_draw_offer(player)
     elsif (player_move.include?("resign"))
       resign(player)
+    elsif @board.promotion?(player_move[0], player_move[1])
+      @board.promote(player_move[0], player_move[1], get_promotion_input)
     else
       @board.move(player_move[0], player_move[1], @ply)
     end
   end
 
-
+  def get_promotion_input
+    valid_inputs = ["queen", "rook", "bishop", "knight"]
+    loop do
+      print "please enter the type of piece to promote to: "
+      piece_type = gets.chomp.downcase
+      return piece_type if valid_inputs.include?(piece_type)
+      puts "please enter a valid input. "
+    end
+  end
 
   def get_move_input(player)
     while true
@@ -109,8 +111,6 @@ class Game
       end
       puts "Please enter a valid move"
     end
-
-    
 
     [from, to]
   end
