@@ -4,16 +4,15 @@ require_relative '../lib/board'
 describe Board do
 
   before do
+    white_a_pawn = instance_double(Pawn, color: "white", position: Position.new(0,1))
+    white_b_pawn = instance_double(Pawn, color: "white", position: Position.new(1,1))
+    white_c_pawn = instance_double(Pawn, color: "white", position: Position.new(2,1))
+    white_d_pawn = instance_double(Pawn, color: "white", position: Position.new(3,1))
+    allow(Pawn).to receive(new).and_return()
   end
   
   
   describe '#update_square' do
-  end
-
-  describe '#put_pieces_on_board' do
-  end
-
-  describe '#put_pieces_on_board' do
   end
 
   describe '#promotion?' do

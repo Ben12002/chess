@@ -1,0 +1,293 @@
+---
+:board: !ruby/object:Board
+  arr:
+  - - &9 !ruby/object:Rook
+      position: !ruby/object:Position
+        file: 0
+        rank: 0
+      color: white
+      moved_already: false
+    - &1 !ruby/object:Pawn
+      position: !ruby/object:Position
+        file: 0
+        rank: 1
+      color: white
+      double_move_ply: -99
+    - " "
+    - " "
+    - " "
+    - " "
+    - &17 !ruby/object:Pawn
+      position: !ruby/object:Position
+        file: 0
+        rank: 6
+      color: black
+      double_move_ply: -99
+    - &25 !ruby/object:Rook
+      position: !ruby/object:Position
+        file: 0
+        rank: 7
+      color: black
+      moved_already: false
+  - - &11 !ruby/object:Knight
+      position: !ruby/object:Position
+        file: 1
+        rank: 0
+      color: white
+    - &2 !ruby/object:Pawn
+      position: !ruby/object:Position
+        file: 1
+        rank: 1
+      color: white
+      double_move_ply: -99
+    - " "
+    - " "
+    - " "
+    - " "
+    - &18 !ruby/object:Pawn
+      position: !ruby/object:Position
+        file: 1
+        rank: 6
+      color: black
+      double_move_ply: -99
+    - &27 !ruby/object:Knight
+      position: !ruby/object:Position
+        file: 1
+        rank: 7
+      color: black
+  - - &13 !ruby/object:Bishop
+      position: !ruby/object:Position
+        file: 2
+        rank: 0
+      color: white
+    - &3 !ruby/object:Pawn
+      position: !ruby/object:Position
+        file: 2
+        rank: 1
+      color: white
+      double_move_ply: -99
+    - " "
+    - " "
+    - " "
+    - " "
+    - &19 !ruby/object:Pawn
+      position: !ruby/object:Position
+        file: 2
+        rank: 6
+      color: black
+      double_move_ply: -99
+    - &29 !ruby/object:Bishop
+      position: !ruby/object:Position
+        file: 2
+        rank: 7
+      color: black
+  - - &15 !ruby/object:Queen
+      position: !ruby/object:Position
+        file: 3
+        rank: 0
+      color: white
+    - " "
+    - " "
+    - &4 !ruby/object:Pawn
+      position: !ruby/object:Position
+        file: 3
+        rank: 3
+      color: white
+      double_move_ply: 0
+      moved_already: true
+    - " "
+    - " "
+    - &20 !ruby/object:Pawn
+      position: !ruby/object:Position
+        file: 3
+        rank: 6
+      color: black
+      double_move_ply: -99
+    - &31 !ruby/object:Queen
+      position: !ruby/object:Position
+        file: 3
+        rank: 7
+      color: black
+  - - &16 !ruby/object:King
+      position: !ruby/object:Position
+        file: 4
+        rank: 0
+      color: white
+      moved_already: false
+    - &5 !ruby/object:Pawn
+      position: !ruby/object:Position
+        file: 4
+        rank: 1
+      color: white
+      double_move_ply: -99
+    - " "
+    - " "
+    - &21 !ruby/object:Pawn
+      position: !ruby/object:Position
+        file: 4
+        rank: 4
+      color: black
+      double_move_ply: 1
+      moved_already: true
+    - " "
+    - " "
+    - &32 !ruby/object:King
+      position: !ruby/object:Position
+        file: 4
+        rank: 7
+      color: black
+      moved_already: false
+  - - &14 !ruby/object:Bishop
+      position: !ruby/object:Position
+        file: 5
+        rank: 0
+      color: white
+    - &6 !ruby/object:Pawn
+      position: !ruby/object:Position
+        file: 5
+        rank: 1
+      color: white
+      double_move_ply: -99
+    - " "
+    - " "
+    - " "
+    - " "
+    - &22 !ruby/object:Pawn
+      position: !ruby/object:Position
+        file: 5
+        rank: 6
+      color: black
+      double_move_ply: -99
+    - &30 !ruby/object:Bishop
+      position: !ruby/object:Position
+        file: 5
+        rank: 7
+      color: black
+  - - &12 !ruby/object:Knight
+      position: !ruby/object:Position
+        file: 6
+        rank: 0
+      color: white
+    - &7 !ruby/object:Pawn
+      position: !ruby/object:Position
+        file: 6
+        rank: 1
+      color: white
+      double_move_ply: -99
+    - " "
+    - " "
+    - " "
+    - " "
+    - &23 !ruby/object:Pawn
+      position: !ruby/object:Position
+        file: 6
+        rank: 6
+      color: black
+      double_move_ply: -99
+    - &28 !ruby/object:Knight
+      position: !ruby/object:Position
+        file: 6
+        rank: 7
+      color: black
+  - - &10 !ruby/object:Rook
+      position: !ruby/object:Position
+        file: 7
+        rank: 0
+      color: white
+      moved_already: false
+    - &8 !ruby/object:Pawn
+      position: !ruby/object:Position
+        file: 7
+        rank: 1
+      color: white
+      double_move_ply: -99
+    - " "
+    - " "
+    - " "
+    - " "
+    - &24 !ruby/object:Pawn
+      position: !ruby/object:Position
+        file: 7
+        rank: 6
+      color: black
+      double_move_ply: -99
+    - &26 !ruby/object:Rook
+      position: !ruby/object:Position
+        file: 7
+        rank: 7
+      color: black
+      moved_already: false
+  white_pieces:
+  - *1
+  - *2
+  - *3
+  - *4
+  - *5
+  - *6
+  - *7
+  - *8
+  - *9
+  - *10
+  - *11
+  - *12
+  - *13
+  - *14
+  - *15
+  - *16
+  black_pieces:
+  - *17
+  - *18
+  - *19
+  - *20
+  - *21
+  - *22
+  - *23
+  - *24
+  - *25
+  - *26
+  - *27
+  - *28
+  - *29
+  - *30
+  - *31
+  - *32
+  board_states:
+  - "\e[47m \e[30m♜\e[1m \e[0m\e[100m \e[30m♞\e[1m \e[0m\e[47m \e[30m♝\e[1m \e[0m\e[100m
+    \e[30m♛\e[1m \e[0m\e[47m \e[30m♚\e[1m \e[0m\e[100m \e[30m♝\e[1m \e[0m\e[47m \e[30m♞\e[1m
+    \e[0m\e[100m \e[30m♜\e[1m \e[0m\n\e[100m \e[30m♟\e[1m \e[0m\e[47m \e[30m♟\e[1m
+    \e[0m\e[100m \e[30m♟\e[1m \e[0m\e[47m \e[30m♟\e[1m \e[0m\e[100m \e[30m♟\e[1m \e[0m\e[47m
+    \e[30m♟\e[1m \e[0m\e[100m \e[30m♟\e[1m \e[0m\e[47m \e[30m♟\e[1m \e[0m\n\e[47m
+    \  \e[0m\e[100m   \e[0m\e[47m   \e[0m\e[100m   \e[0m\e[47m   \e[0m\e[100m   \e[0m\e[47m
+    \  \e[0m\e[100m   \e[0m\n\e[100m   \e[0m\e[47m   \e[0m\e[100m   \e[0m\e[47m   \e[0m\e[100m
+    \  \e[0m\e[47m   \e[0m\e[100m   \e[0m\e[47m   \e[0m\n\e[47m   \e[0m\e[100m   \e[0m\e[47m
+    \  \e[0m\e[100m \e[1m♟\e[1m \e[0m\e[47m   \e[0m\e[100m   \e[0m\e[47m   \e[0m\e[100m
+    \  \e[0m\n\e[100m   \e[0m\e[47m   \e[0m\e[100m   \e[0m\e[47m   \e[0m\e[100m   \e[0m\e[47m
+    \  \e[0m\e[100m   \e[0m\e[47m   \e[0m\n\e[47m \e[1m♟\e[1m \e[0m\e[100m \e[1m♟\e[1m
+    \e[0m\e[47m \e[1m♟\e[1m \e[0m\e[100m   \e[0m\e[47m \e[1m♟\e[1m \e[0m\e[100m \e[1m♟\e[1m
+    \e[0m\e[47m \e[1m♟\e[1m \e[0m\e[100m \e[1m♟\e[1m \e[0m\n\e[100m \e[1m♜\e[1m \e[0m\e[47m
+    \e[1m♞\e[1m \e[0m\e[100m \e[1m♝\e[1m \e[0m\e[47m \e[1m♛\e[1m \e[0m\e[100m \e[1m♚\e[1m
+    \e[0m\e[47m \e[1m♝\e[1m \e[0m\e[100m \e[1m♞\e[1m \e[0m\e[47m \e[1m♜\e[1m \e[0m\n"
+  - "\e[47m \e[30m♜\e[1m \e[0m\e[100m \e[30m♞\e[1m \e[0m\e[47m \e[30m♝\e[1m \e[0m\e[100m
+    \e[30m♛\e[1m \e[0m\e[47m \e[30m♚\e[1m \e[0m\e[100m \e[30m♝\e[1m \e[0m\e[47m \e[30m♞\e[1m
+    \e[0m\e[100m \e[30m♜\e[1m \e[0m\n\e[100m \e[30m♟\e[1m \e[0m\e[47m \e[30m♟\e[1m
+    \e[0m\e[100m \e[30m♟\e[1m \e[0m\e[47m \e[30m♟\e[1m \e[0m\e[100m   \e[0m\e[47m
+    \e[30m♟\e[1m \e[0m\e[100m \e[30m♟\e[1m \e[0m\e[47m \e[30m♟\e[1m \e[0m\n\e[47m
+    \  \e[0m\e[100m   \e[0m\e[47m   \e[0m\e[100m   \e[0m\e[47m   \e[0m\e[100m   \e[0m\e[47m
+    \  \e[0m\e[100m   \e[0m\n\e[100m   \e[0m\e[47m   \e[0m\e[100m   \e[0m\e[47m   \e[0m\e[100m
+    \e[30m♟\e[1m \e[0m\e[47m   \e[0m\e[100m   \e[0m\e[47m   \e[0m\n\e[47m   \e[0m\e[100m
+    \  \e[0m\e[47m   \e[0m\e[100m \e[1m♟\e[1m \e[0m\e[47m   \e[0m\e[100m   \e[0m\e[47m
+    \  \e[0m\e[100m   \e[0m\n\e[100m   \e[0m\e[47m   \e[0m\e[100m   \e[0m\e[47m   \e[0m\e[100m
+    \  \e[0m\e[47m   \e[0m\e[100m   \e[0m\e[47m   \e[0m\n\e[47m \e[1m♟\e[1m \e[0m\e[100m
+    \e[1m♟\e[1m \e[0m\e[47m \e[1m♟\e[1m \e[0m\e[100m   \e[0m\e[47m \e[1m♟\e[1m \e[0m\e[100m
+    \e[1m♟\e[1m \e[0m\e[47m \e[1m♟\e[1m \e[0m\e[100m \e[1m♟\e[1m \e[0m\n\e[100m \e[1m♜\e[1m
+    \e[0m\e[47m \e[1m♞\e[1m \e[0m\e[100m \e[1m♝\e[1m \e[0m\e[47m \e[1m♛\e[1m \e[0m\e[100m
+    \e[1m♚\e[1m \e[0m\e[47m \e[1m♝\e[1m \e[0m\e[100m \e[1m♞\e[1m \e[0m\e[47m \e[1m♜\e[1m
+    \e[0m\n"
+:turn: 3
+:ply: 2
+:white_resign: false
+:black_resign: false
+:draw: false
+:current_player: !ruby/object:Player
+  color: white
+  name: white

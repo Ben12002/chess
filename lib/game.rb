@@ -3,7 +3,7 @@ require 'yaml'
 
 class Game
 
-  COMMANDS = ["resign", "draw"]
+  COMMANDS = ["resign", "draw", "help", "save", "load"]
 
   def initialize
     @board = Board.new
@@ -12,6 +12,34 @@ class Game
     @white_resign = false
     @black_resign = false
     @draw = false
+    @current_player = nil
+  end
+
+  def to_yaml
+    str = YAML.dump ({
+      :board => @board,
+      :turn => @turn,
+      :ply => @ply,
+      :white_resign => @white_resign,
+      :black_resign => @black_resign,
+      :draw => @draw,
+      :current_player => @current_player
+    })
+    file = File.open("test.yaml", "w")
+    file.write(str)
+    file.close
+  end
+
+  def from_yaml(fname)
+    contents = File.open(fname, "r") {|file| file.read}
+    data = YAML.load contents
+    @board = data[:board]
+    @turn = data[:turn]
+    @ply = data[:ply]
+    @white_resign = data[:white_resign]
+    @black_resign = data[:black_resign]
+    @draw = data[:draw]
+    @current_player = data[:current_player]
   end
 
   def play
@@ -50,30 +78,62 @@ class Game
          HEREDOC
   end
 
+  def help_message
+    puts <<-HEREDOC
+
+          --------------------------------------------HELP---------------------------------------------------
+          First, enter the coordinates of the piece you would like to move in the format 'x,y'. 
+          Then, enter the coordinates where you would like to move that piece. If you enter a coordinate
+          which corresponds to an empty tile, an opponent's piece, or a piece with no legal moves, you will
+          have to enter another coordinate.
+          ---------------------------------------------------------------------------------------------------
+         HEREDOC
+  end
+
   def turns
     @board.simple_display_with_index
     loop do
-      current_player = @ply.odd? ? @black : @white
-      return if game_over?(current_player)
-      current_move = ply(current_player)
+      @current_player = @ply.odd? ? @black : @white
+      return if game_over?(@current_player)
+      current_move = ply(@current_player)
       @board.simple_display_with_index
       @ply += 1
-      @turn += 1 if current_player = @black
+      @turn += 1 if @current_player = @black
     end
   end
 
   # A ply is half a turn. In one turn, there are 2 plies: white's move and black's move.
   def ply(player)
     player_move = get_move_input(player)
-    if (player_move.include?("draw"))
+    if player_move.include?("draw")
       ply(player) if !make_draw_offer(player)
-    elsif (player_move.include?("resign"))
+    elsif player_move.include?("resign")
       resign(player)
+    elsif player_move.include?("help")
+      help_message
+      ply(player)
+    elsif player_move.include?("save")
+      save_game
+      ply(player)
+    elsif player_move.include?("load")
+      load_game
+      ply(@current_player)
     elsif @board.promotion?(player_move[0], player_move[1])
       @board.promote(player_move[0], player_move[1], get_promotion_input)
     else
       @board.move(player_move[0], player_move[1], @ply)
     end
+  end
+
+  def load_game
+    from_yaml("test.yaml")
+    puts "Loaded save!"
+    @board.simple_display_with_index
+  end
+
+  def save_game
+    to_yaml
+    puts "Game saved!"
   end
 
   def get_promotion_input
@@ -88,7 +148,7 @@ class Game
 
   def get_move_input(player)
     while true
-      print "Please enter the coordinates of a piece you'd like to move: "
+      print "Please enter the coordinates of a piece you'd like to move (#{player.name}'s turn): "
       from_input = gets.chomp.downcase
       return from_input if COMMANDS.include?(from_input)
       
