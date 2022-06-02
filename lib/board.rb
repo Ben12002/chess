@@ -17,13 +17,15 @@ class Board
 
 
   def initialize(arr = nil)
+    @board_states = []
     if !arr
       @arr = Array.new(8) { Array.new(8, " ") }
-      set_up_board
+      set_up_board 
     else
       @arr = arr
+      @white_pieces = []
+      @black_pieces = []
     end
-    @board_states = []
   end
 
   def ==(other)
@@ -143,19 +145,23 @@ class Board
     pawn_to_promote = get_square(from.file, from.rank)
     pieces = (pawn_to_promote.color == "white") ? @white_pieces : @black_pieces
     capture_piece(from)
-    
-    case piece_type
-    when "queen"
-      new_piece = Queen.new(to, pawn_to_promote.color)
-    when "rook"
-      new_piece = Rook.new(to, pawn_to_promote.color)
-    when "bishop"
-      new_piece =  Bishop.new(to, pawn_to_promote.color)
-    when "knight"
-      new_piece = Knight.new(to, pawn_to_promote.color)
-    end
+    new_piece = create_piece(piece_type, pawn_to_promote.color, to)
     pieces.push(new_piece)
     update_square(new_piece, to.file, to.rank)
+  end
+
+  def create_piece(piece_type, color, position)
+    case piece_type
+    when "queen"
+      new_piece = Queen.new(position, color)
+    when "rook"
+      new_piece = Rook.new(position, color)
+    when "bishop"
+      new_piece =  Bishop.new(position, color)
+    when "knight"
+      new_piece = Knight.new(position, color)
+    end
+    new_piece
   end
 
   # get piece of board, remove it from its corresponding piece array
@@ -367,8 +373,8 @@ class Board
   def bishop_vs_bishop?
     @white_pieces.length == 2 && 
     @black_pieces.length == 2 &&
-    (@white_pieces.filter { |piece| piece.is_a?(Bishop) || piece.is_a?(king) }.length == 2) &&
-    (@black_pieces.filter { |piece| piece.is_a?(Bishop) || piece.is_a?(king) }.length == 2)
+    (@white_pieces.filter { |piece| piece.is_a?(Bishop) || piece.is_a?(King) }.length == 2) &&
+    (@black_pieces.filter { |piece| piece.is_a?(Bishop) || piece.is_a?(King) }.length == 2)
   end
 
   def can_en_passant?(color, ply, tile)

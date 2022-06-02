@@ -94,7 +94,7 @@ class Game
     @board.simple_display_with_index
     loop do
       @current_player = @ply.odd? ? @black : @white
-      return if game_over?(@current_player)
+      return if game_over?(@white) || game_over?(@black)
       current_move = ply(@current_player)
       @board.simple_display_with_index
       @ply += 1

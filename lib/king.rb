@@ -39,7 +39,11 @@ class King < Piece
   end
 
   def get_legal_moves(board, ply)
-    legal_moves = get_full_move_range.filter{|tile| !board.threatened_tile?(@color, tile) && !board.same_color?(@color, tile.file, tile.rank)}
+    legal_moves = get_full_move_range.filter do |tile| 
+      !board.threatened_tile?(@color, tile) && 
+      !board.same_color?(@color, tile.file, tile.rank) &&
+      !in_check_if_move?(board, tile, ply) 
+    end
     if @color == "white"
       castle_short = Position.new(6,0)
       castle_long = Position.new(2,0)
