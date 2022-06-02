@@ -16,16 +16,13 @@ class Board
   include Colorizer, Display
 
 
-  def initialize()
-    @arr = [[" ", " ", " ", " ", " ", " ", " ", " "],
-            [" ", " ", " ", " ", " ", " ", " ", " "],
-            [" ", " ", " ", " ", " ", " ", " ", " "],
-            [" ", " ", " ", " ", " ", " ", " ", " "],
-            [" ", " ", " ", " ", " ", " ", " ", " "],
-            [" ", " ", " ", " ", " ", " ", " ", " "],
-            [" ", " ", " ", " ", " ", " ", " ", " "],
-            [" ", " ", " ", " ", " ", " ", " ", " "]]
-    set_up_board
+  def initialize(arr = nil)
+    if !arr
+      @arr = Array.new(8) { Array.new(8, " ") }
+      set_up_board
+    else
+      @arr = arr
+    end
     @board_states = []
   end
 
@@ -141,6 +138,7 @@ class Board
     (piece_to_move.color == "black" && to.rank == 0)
   end
 
+  # promote a pawn on position <from> moving to position <to> into <piece_type>
   def promote(from, to, piece_type)
     pawn_to_promote = get_square(from.file, from.rank)
     pieces = (pawn_to_promote.color == "white") ? @white_pieces : @black_pieces
@@ -156,11 +154,11 @@ class Board
     when "knight"
       new_piece = Knight.new(to, pawn_to_promote.color)
     end
-    # these two lines could be turned into a #add_piece method
     pieces.push(new_piece)
     update_square(new_piece, to.file, to.rank)
   end
 
+  # get piece of board, remove it from its corresponding piece array
   def capture_piece(position)
     captured_piece = get_square(position.file, position.rank)
     update_square(" ", position.file, position.rank)
