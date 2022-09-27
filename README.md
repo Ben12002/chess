@@ -1,4 +1,5 @@
 # chess
 Command line chess written in ruby!
+This was a fun one. Tons of OOP design choices to make, and a fair bit more complex than Connect-Four.
 <br>
-<img width="210" alt="Screen Shot 2022-05-25 at 20 35 03" src="https://user-images.githubusercontent.com/89565362/170410912-1727a7ec-2334-4279-bf82-32b9194f38f0.png">
+<img width="644" alt="Screen Shot 2022-09-26 at 19 27 49" src="https://user-images.githubusercontent.com/89565362/192417363-f17fe47c-3b00-47a6-a300-de572ec21957.png">
