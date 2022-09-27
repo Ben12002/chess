@@ -1,4 +1,5 @@
 # chess
+[Try it out! (live link)](https://replit.com/@BenedictTan1/Chess?v=1)
 Command line chess written in ruby!
 This was a fun one. Tons of OOP design choices to make, and a fair bit more complex than Connect-Four.
 <br>
